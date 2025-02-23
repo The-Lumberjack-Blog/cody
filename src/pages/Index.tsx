@@ -19,33 +19,51 @@ const Index = () => {
   });
 
   return (
-    <div className="container py-8">
-      <h1 className="text-4xl font-bold mb-2">Workflow Directory</h1>
-      <p className="text-gray-600 mb-8">Discover and implement automated workflows for your business</p>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        <aside className="lg:col-span-1">
-          <CategoryFilter
-            selectedCategory={selectedCategory}
-            onSelectCategory={setSelectedCategory}
-          />
-        </aside>
-        
-        <main className="lg:col-span-3">
+    <div className="min-h-screen bg-gray-50">
+      <div className="bg-black text-white py-16">
+        <div className="container mx-auto px-4">
+          <h1 className="text-5xl font-bold mb-4 max-w-2xl">Discover Powerful AI Workflows</h1>
+          <p className="text-xl text-gray-300 max-w-xl mb-8">
+            Find and implement pre-built AI workflows to automate your business processes and boost productivity
+          </p>
           <SearchBar value={searchQuery} onChange={setSearchQuery} />
-          
-          <div className="grid grid-cols-1 gap-6 mt-8">
-            {filteredWorkflows.map((workflow) => (
-              <ToolCard key={workflow.workflow_url} workflow={workflow} />
-            ))}
-          </div>
-          
-          {filteredWorkflows.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-gray-500">No workflows found matching your criteria.</p>
+        </div>
+      </div>
+      
+      <div className="container mx-auto px-4 py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          <aside className="lg:col-span-1">
+            <div className="bg-white rounded-lg p-6 shadow-sm sticky top-4">
+              <CategoryFilter
+                selectedCategory={selectedCategory}
+                onSelectCategory={setSelectedCategory}
+              />
             </div>
-          )}
-        </main>
+          </aside>
+          
+          <main className="lg:col-span-3">
+            <div className="grid grid-cols-1 gap-6">
+              {filteredWorkflows.map((workflow) => (
+                <ToolCard key={workflow.workflow_url} workflow={workflow} />
+              ))}
+            </div>
+            
+            {filteredWorkflows.length === 0 && (
+              <div className="text-center py-12 bg-white rounded-lg shadow-sm">
+                <p className="text-gray-500 text-lg">No workflows found matching your criteria.</p>
+                <button 
+                  onClick={() => {
+                    setSearchQuery("");
+                    setSelectedCategory(null);
+                  }}
+                  className="mt-4 text-black hover:underline"
+                >
+                  Clear filters
+                </button>
+              </div>
+            )}
+          </main>
+        </div>
       </div>
     </div>
   );
