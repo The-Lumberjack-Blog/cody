@@ -3,9 +3,8 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { CalendarDays, ExternalLink, ChevronRight, Info } from "lucide-react";
+import { CalendarDays, ExternalLink, Info } from "lucide-react";
 import type { Workflow } from "@/data/tools";
-import { useState } from "react";
 import {
   Sheet,
   SheetContent,
@@ -95,7 +94,7 @@ const ToolCard = ({ workflow }: ToolCardProps) => {
               <Info className="w-4 h-4 ml-2" />
             </Button>
           </SheetTrigger>
-          <SheetContent className="w-[400px] sm:w-[540px]">
+          <SheetContent side="right">
             <SheetHeader>
               <SheetTitle>{workflow.workflow_name}</SheetTitle>
               <div className="flex items-center gap-2 text-sm text-gray-500 mt-2">
@@ -106,24 +105,22 @@ const ToolCard = ({ workflow }: ToolCardProps) => {
                 <span>{workflow.creator_name}</span>
               </div>
             </SheetHeader>
-            <div className="mt-6">
+            <div className="mt-6 space-y-6">
               <Badge variant={workflow.paid_or_free === "Free" ? "secondary" : "default"}>
                 {workflow.paid_or_free}
               </Badge>
-              <div className="mt-4 prose prose-gray">
+              <div className="prose prose-gray">
                 <p className="text-gray-600 text-base leading-relaxed whitespace-pre-wrap">
                   {workflow.workflow_description}
                 </p>
               </div>
-              <div className="mt-6">
-                <Button 
-                  className="w-full"
-                  onClick={() => window.open(workflow.workflow_url, "_blank")}
-                >
-                  Get Workflow
-                  <ExternalLink className="w-4 h-4 ml-2" />
-                </Button>
-              </div>
+              <Button 
+                className="w-full"
+                onClick={() => window.open(workflow.workflow_url, "_blank")}
+              >
+                Get Workflow
+                <ExternalLink className="w-4 h-4 ml-2" />
+              </Button>
             </div>
           </SheetContent>
         </Sheet>
@@ -133,4 +130,3 @@ const ToolCard = ({ workflow }: ToolCardProps) => {
 };
 
 export default ToolCard;
-
