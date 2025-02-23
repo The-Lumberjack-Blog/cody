@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import SearchBar from "@/components/SearchBar";
 import CategoryFilter from "@/components/CategoryFilter";
@@ -83,38 +82,18 @@ const Index = () => {
           categoryId = existingCategory.id;
         }
 
-        // Map workflows to include category_id
-        const workflowsToInsert = category.workflows.map(workflow => {
-          // Validate required fields have non-empty values and correct types
-          if (
-            !workflow.workflow_name?.trim() ||
-            !workflow.workflow_url?.trim() ||
-            !workflow.workflow_description?.trim() ||
-            !workflow.creator_name?.trim() ||
-            !workflow.creator_avatar?.trim() ||
-            !Array.isArray(workflow.icon_urls) ||
-            workflow.icon_urls.length === 0 ||
-            !['Free', 'Paid'].includes(workflow.paid_or_free)
-          ) {
-            console.error('Invalid workflow:', workflow);
-            const fieldName = !workflow.workflow_name?.trim() ? 'workflow_name' :
-                            !workflow.workflow_url?.trim() ? 'workflow_url' :
-                            !workflow.workflow_description?.trim() ? 'workflow_description' :
-                            !workflow.creator_name?.trim() ? 'creator_name' :
-                            !workflow.creator_avatar?.trim() ? 'creator_avatar' :
-                            !Array.isArray(workflow.icon_urls) || workflow.icon_urls.length === 0 ? 'icon_urls' :
-                            'paid_or_free';
-            throw new Error(`Invalid workflow data: missing or empty ${fieldName} for workflow "${workflow.workflow_name || 'unnamed workflow'}"`);
-          }
-
+        // Map workflows to include category_id with placeholder values
+        const workflowsToInsert = category.workflows.map((workflow, index) => {
           return {
-            workflow_name: workflow.workflow_name.trim(),
-            workflow_url: workflow.workflow_url.trim(),
-            workflow_description: workflow.workflow_description.trim(),
-            creator_name: workflow.creator_name.trim(),
-            creator_avatar: workflow.creator_avatar.trim(),
-            icon_urls: workflow.icon_urls,
-            paid_or_free: workflow.paid_or_free,
+            workflow_name: workflow.workflow_name?.trim() || `Untitled Workflow ${index + 1}`,
+            workflow_url: workflow.workflow_url?.trim() || 'https://example.com/workflow',
+            workflow_description: workflow.workflow_description?.trim() || 'No description available',
+            creator_name: workflow.creator_name?.trim() || 'Anonymous',
+            creator_avatar: workflow.creator_avatar?.trim() || 'https://ui-avatars.com/api/?name=Anonymous',
+            icon_urls: Array.isArray(workflow.icon_urls) && workflow.icon_urls.length > 0 
+              ? workflow.icon_urls 
+              : ['https://ui-avatars.com/api/?name=W&background=random'],
+            paid_or_free: ['Free', 'Paid'].includes(workflow.paid_or_free) ? workflow.paid_or_free : 'Free',
             category_id: categoryId,
             created_by: workflow.created_by || 'system'
           };
