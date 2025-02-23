@@ -38,21 +38,31 @@ const Index = () => {
 
     try {
       const fileContent = await file.text();
-      const workflows = JSON.parse(fileContent);
+      const jsonData = JSON.parse(fileContent);
 
-      if (!Array.isArray(workflows)) {
-        throw new Error("Invalid JSON format. Expected an array of workflows.");
+      // Check if the JSON data follows the expected format
+      if (!Array.isArray(jsonData) || !jsonData.every(item => item.workflows)) {
+        throw new Error("Invalid JSON format. Expected an array of category objects with workflows.");
       }
 
+      // Extract and flatten all workflows from the categories
+      const allWorkflows = jsonData.flatMap(category => 
+        category.workflows.map(workflow => ({
+          ...workflow,
+          category_url: category.category_url
+        }))
+      );
+
       // Validate workflow objects
-      const isValid = workflows.every(workflow => 
+      const isValid = allWorkflows.every(workflow => 
         typeof workflow.workflow_name === 'string' &&
         typeof workflow.workflow_url === 'string' &&
         typeof workflow.workflow_description === 'string' &&
         typeof workflow.creator_name === 'string' &&
         typeof workflow.creator_avatar === 'string' &&
         Array.isArray(workflow.icon_urls) &&
-        (workflow.paid_or_free === 'Free' || workflow.paid_or_free === 'Paid')
+        (workflow.paid_or_free === 'Free' || workflow.paid_or_free === 'Paid') &&
+        typeof workflow.category_url === 'string'
       );
 
       if (!isValid) {
@@ -61,13 +71,13 @@ const Index = () => {
 
       const { error } = await supabase
         .from('workflow')
-        .insert(workflows);
+        .insert(allWorkflows);
 
       if (error) throw error;
 
       toast({
         title: "Success",
-        description: `Successfully imported ${workflows.length} workflows`,
+        description: `Successfully imported ${allWorkflows.length} workflows`,
       });
 
       // Refresh the workflows list
@@ -178,3 +188,4 @@ const Index = () => {
 };
 
 export default Index;
+
