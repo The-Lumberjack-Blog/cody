@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import SearchBar from "@/components/SearchBar";
 import CategoryFilter from "@/components/CategoryFilter";
@@ -49,7 +48,7 @@ const Index = () => {
       const jsonData = JSON.parse(fileContent);
 
       // Check if the JSON data follows the expected format
-      if (!Array.isArray(jsonData) || !jsonData.every(item => item.workflows)) {
+      if (!Array.isArray(jsonData) || !jsonData.every(item => item.workflows && item.category_url)) {
         throw new Error("Invalid JSON format. Expected an array of category objects with workflows.");
       }
 
@@ -84,33 +83,43 @@ const Index = () => {
         }
 
         // Map workflows to include category_id
-        const workflowsWithCategory = category.workflows.map(workflow => ({
-          ...workflow,
-          category_id: categoryId
-        }));
+        const workflowsToInsert = category.workflows.map(workflow => {
+          // Validate required fields and types
+          if (
+            typeof workflow.workflow_name !== 'string' ||
+            typeof workflow.workflow_url !== 'string' ||
+            typeof workflow.workflow_description !== 'string' ||
+            typeof workflow.creator_name !== 'string' ||
+            typeof workflow.creator_avatar !== 'string' ||
+            !Array.isArray(workflow.icon_urls) ||
+            !['Free', 'Paid'].includes(workflow.paid_or_free)
+          ) {
+            console.error('Invalid workflow:', workflow);
+            throw new Error(`Invalid workflow data: ${workflow.workflow_name || 'unnamed workflow'}`);
+          }
 
-        // Validate workflow objects
-        const isValid = workflowsWithCategory.every(workflow => 
-          typeof workflow.workflow_name === 'string' &&
-          typeof workflow.workflow_url === 'string' &&
-          typeof workflow.workflow_description === 'string' &&
-          typeof workflow.creator_name === 'string' &&
-          typeof workflow.creator_avatar === 'string' &&
-          Array.isArray(workflow.icon_urls) &&
-          (workflow.paid_or_free === 'Free' || workflow.paid_or_free === 'Paid') &&
-          typeof workflow.category_id === 'string'
-        );
-
-        if (!isValid) {
-          throw new Error("Invalid workflow data structure");
-        }
+          return {
+            workflow_name: workflow.workflow_name,
+            workflow_url: workflow.workflow_url,
+            workflow_description: workflow.workflow_description,
+            creator_name: workflow.creator_name,
+            creator_avatar: workflow.creator_avatar,
+            icon_urls: workflow.icon_urls,
+            paid_or_free: workflow.paid_or_free,
+            category_id: categoryId,
+            created_by: workflow.created_by || 'system'
+          };
+        });
 
         // Insert workflows for this category
         const { error: workflowInsertError } = await supabase
           .from('workflow')
-          .insert(workflowsWithCategory);
+          .insert(workflowsToInsert);
 
-        if (workflowInsertError) throw workflowInsertError;
+        if (workflowInsertError) {
+          console.error('Workflow insert error:', workflowInsertError);
+          throw workflowInsertError;
+        }
       }
 
       toast({
@@ -226,4 +235,3 @@ const Index = () => {
 };
 
 export default Index;
-
