@@ -500,6 +500,7 @@ export type Database = {
           created_at: string | null
           full_url: string | null
           id: string
+          name: string | null
           total_count_extracted: number | null
         }
         Insert: {
@@ -507,6 +508,7 @@ export type Database = {
           created_at?: string | null
           full_url?: string | null
           id?: string
+          name?: string | null
           total_count_extracted?: number | null
         }
         Update: {
@@ -514,6 +516,7 @@ export type Database = {
           created_at?: string | null
           full_url?: string | null
           id?: string
+          name?: string | null
           total_count_extracted?: number | null
         }
         Relationships: []
