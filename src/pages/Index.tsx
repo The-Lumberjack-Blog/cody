@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import SearchBar from "@/components/SearchBar";
 import CategoryFilter from "@/components/CategoryFilter";
@@ -84,26 +85,34 @@ const Index = () => {
 
         // Map workflows to include category_id
         const workflowsToInsert = category.workflows.map(workflow => {
-          // Validate required fields and types
+          // Validate required fields have non-empty values and correct types
           if (
-            typeof workflow.workflow_name !== 'string' ||
-            typeof workflow.workflow_url !== 'string' ||
-            typeof workflow.workflow_description !== 'string' ||
-            typeof workflow.creator_name !== 'string' ||
-            typeof workflow.creator_avatar !== 'string' ||
+            !workflow.workflow_name?.trim() ||
+            !workflow.workflow_url?.trim() ||
+            !workflow.workflow_description?.trim() ||
+            !workflow.creator_name?.trim() ||
+            !workflow.creator_avatar?.trim() ||
             !Array.isArray(workflow.icon_urls) ||
+            workflow.icon_urls.length === 0 ||
             !['Free', 'Paid'].includes(workflow.paid_or_free)
           ) {
             console.error('Invalid workflow:', workflow);
-            throw new Error(`Invalid workflow data: ${workflow.workflow_name || 'unnamed workflow'}`);
+            const fieldName = !workflow.workflow_name?.trim() ? 'workflow_name' :
+                            !workflow.workflow_url?.trim() ? 'workflow_url' :
+                            !workflow.workflow_description?.trim() ? 'workflow_description' :
+                            !workflow.creator_name?.trim() ? 'creator_name' :
+                            !workflow.creator_avatar?.trim() ? 'creator_avatar' :
+                            !Array.isArray(workflow.icon_urls) || workflow.icon_urls.length === 0 ? 'icon_urls' :
+                            'paid_or_free';
+            throw new Error(`Invalid workflow data: missing or empty ${fieldName} for workflow "${workflow.workflow_name || 'unnamed workflow'}"`);
           }
 
           return {
-            workflow_name: workflow.workflow_name,
-            workflow_url: workflow.workflow_url,
-            workflow_description: workflow.workflow_description,
-            creator_name: workflow.creator_name,
-            creator_avatar: workflow.creator_avatar,
+            workflow_name: workflow.workflow_name.trim(),
+            workflow_url: workflow.workflow_url.trim(),
+            workflow_description: workflow.workflow_description.trim(),
+            creator_name: workflow.creator_name.trim(),
+            creator_avatar: workflow.creator_avatar.trim(),
             icon_urls: workflow.icon_urls,
             paid_or_free: workflow.paid_or_free,
             category_id: categoryId,
