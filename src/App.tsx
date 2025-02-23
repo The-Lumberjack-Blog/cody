@@ -8,6 +8,8 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import { useEffect, useState } from "react";
 import { supabase } from "./integrations/supabase/client";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/AppSidebar";
 
 const queryClient = new QueryClient();
 
@@ -36,15 +38,24 @@ const App = () => {
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route
-              path="/auth"
-              element={
-                session ? <Navigate to="/" replace /> : <Auth />
-              }
-            />
-          </Routes>
+          <SidebarProvider>
+            <div className="min-h-screen flex w-full">
+              {session && <AppSidebar />}
+              <main className="flex-1">
+                <Routes>
+                  <Route
+                    path="/"
+                    element={!session ? <Navigate to="/auth" replace /> : <Index />}
+                  />
+                  <Route
+                    path="/auth"
+                    element={session ? <Navigate to="/" replace /> : <Auth />}
+                  />
+                  {/* Add more routes for other apps here */}
+                </Routes>
+              </main>
+            </div>
+          </SidebarProvider>
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
