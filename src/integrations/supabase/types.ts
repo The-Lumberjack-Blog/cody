@@ -439,7 +439,7 @@ export type Database = {
       }
       workflow: {
         Row: {
-          category_url: string | null
+          category_id: string | null
           created_at: string | null
           created_by: string
           creator_avatar: string
@@ -452,7 +452,7 @@ export type Database = {
           workflow_url: string
         }
         Insert: {
-          category_url?: string | null
+          category_id?: string | null
           created_at?: string | null
           created_by: string
           creator_avatar: string
@@ -465,7 +465,7 @@ export type Database = {
           workflow_url: string
         }
         Update: {
-          category_url?: string | null
+          category_id?: string | null
           created_at?: string | null
           created_by?: string
           creator_avatar?: string
@@ -479,6 +479,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "workflow_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "workflow_categories"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "workflow_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
@@ -486,6 +493,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      workflow_categories: {
+        Row: {
+          category_url: string
+          created_at: string | null
+          full_url: string | null
+          id: string
+          total_count_extracted: number | null
+        }
+        Insert: {
+          category_url: string
+          created_at?: string | null
+          full_url?: string | null
+          id?: string
+          total_count_extracted?: number | null
+        }
+        Update: {
+          category_url?: string
+          created_at?: string | null
+          full_url?: string | null
+          id?: string
+          total_count_extracted?: number | null
+        }
+        Relationships: []
       }
     }
     Views: {

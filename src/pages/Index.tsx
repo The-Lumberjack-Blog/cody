@@ -21,14 +21,22 @@ const Index = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("workflow")
-        .select("*");
+        .select(`
+          *,
+          workflow_categories!inner(
+            category_url
+          )
+        `);
 
       if (error) {
         console.error("Error fetching workflows:", error);
         throw error;
       }
 
-      return data as Workflow[];
+      return data.map(workflow => ({
+        ...workflow,
+        category_url: workflow.workflow_categories.category_url
+      })) as Workflow[];
     }
   });
 
@@ -45,39 +53,69 @@ const Index = () => {
         throw new Error("Invalid JSON format. Expected an array of category objects with workflows.");
       }
 
-      // Extract and flatten all workflows from the categories
-      const allWorkflows = jsonData.flatMap(category => 
-        category.workflows.map(workflow => ({
+      // First, create or get categories
+      for (const category of jsonData) {
+        const { data: existingCategory, error: categoryCheckError } = await supabase
+          .from('workflow_categories')
+          .select('id')
+          .eq('category_url', category.category_url)
+          .single();
+
+        if (categoryCheckError && categoryCheckError.code !== 'PGRST116') {
+          throw categoryCheckError;
+        }
+
+        let categoryId;
+        if (!existingCategory) {
+          const { data: newCategory, error: categoryInsertError } = await supabase
+            .from('workflow_categories')
+            .insert({
+              category_url: category.category_url,
+              full_url: category.full_url,
+              total_count_extracted: category.workflows.length
+            })
+            .select('id')
+            .single();
+
+          if (categoryInsertError) throw categoryInsertError;
+          categoryId = newCategory.id;
+        } else {
+          categoryId = existingCategory.id;
+        }
+
+        // Map workflows to include category_id
+        const workflowsWithCategory = category.workflows.map(workflow => ({
           ...workflow,
-          category_url: category.category_url
-        }))
-      );
+          category_id: categoryId
+        }));
 
-      // Validate workflow objects
-      const isValid = allWorkflows.every(workflow => 
-        typeof workflow.workflow_name === 'string' &&
-        typeof workflow.workflow_url === 'string' &&
-        typeof workflow.workflow_description === 'string' &&
-        typeof workflow.creator_name === 'string' &&
-        typeof workflow.creator_avatar === 'string' &&
-        Array.isArray(workflow.icon_urls) &&
-        (workflow.paid_or_free === 'Free' || workflow.paid_or_free === 'Paid') &&
-        typeof workflow.category_url === 'string'
-      );
+        // Validate workflow objects
+        const isValid = workflowsWithCategory.every(workflow => 
+          typeof workflow.workflow_name === 'string' &&
+          typeof workflow.workflow_url === 'string' &&
+          typeof workflow.workflow_description === 'string' &&
+          typeof workflow.creator_name === 'string' &&
+          typeof workflow.creator_avatar === 'string' &&
+          Array.isArray(workflow.icon_urls) &&
+          (workflow.paid_or_free === 'Free' || workflow.paid_or_free === 'Paid') &&
+          typeof workflow.category_id === 'string'
+        );
 
-      if (!isValid) {
-        throw new Error("Invalid workflow data structure");
+        if (!isValid) {
+          throw new Error("Invalid workflow data structure");
+        }
+
+        // Insert workflows for this category
+        const { error: workflowInsertError } = await supabase
+          .from('workflow')
+          .insert(workflowsWithCategory);
+
+        if (workflowInsertError) throw workflowInsertError;
       }
-
-      const { error } = await supabase
-        .from('workflow')
-        .insert(allWorkflows);
-
-      if (error) throw error;
 
       toast({
         title: "Success",
-        description: `Successfully imported ${allWorkflows.length} workflows`,
+        description: `Successfully imported workflows from ${jsonData.length} categories`,
       });
 
       // Refresh the workflows list
