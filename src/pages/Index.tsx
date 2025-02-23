@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import SearchBar from "@/components/SearchBar";
 import CategoryFilter from "@/components/CategoryFilter";
 import ToolCard from "@/components/ToolCard";
@@ -7,18 +7,10 @@ import { categories } from "@/data/tools";
 import { supabase } from "@/integrations/supabase/client";
 import type { Workflow } from "@/types/workflow";
 import { useQuery } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const navigate = useNavigate();
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate("/auth");
-  };
 
   const { data: workflows = [], isLoading } = useQuery({
     queryKey: ["workflows"],
@@ -49,12 +41,7 @@ const Index = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="bg-black text-white py-16">
         <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center mb-8">
-            <h1 className="text-5xl font-bold max-w-2xl">Discover Powerful AI Workflows</h1>
-            <Button onClick={handleLogout} variant="outline">
-              Sign Out
-            </Button>
-          </div>
+          <h1 className="text-5xl font-bold mb-4 max-w-2xl">Discover Powerful AI Workflows</h1>
           <p className="text-xl text-gray-300 max-w-xl mb-8">
             Find and implement pre-built AI workflows to automate your business processes and boost productivity
           </p>
