@@ -437,6 +437,56 @@ export type Database = {
         }
         Relationships: []
       }
+      workflow: {
+        Row: {
+          category_url: string | null
+          created_at: string | null
+          created_by: string
+          creator_avatar: string
+          creator_name: string
+          icon_urls: string[]
+          id: string
+          paid_or_free: string
+          workflow_description: string
+          workflow_name: string
+          workflow_url: string
+        }
+        Insert: {
+          category_url?: string | null
+          created_at?: string | null
+          created_by: string
+          creator_avatar: string
+          creator_name: string
+          icon_urls: string[]
+          id?: string
+          paid_or_free: string
+          workflow_description: string
+          workflow_name: string
+          workflow_url: string
+        }
+        Update: {
+          category_url?: string | null
+          created_at?: string | null
+          created_by?: string
+          creator_avatar?: string
+          creator_name?: string
+          icon_urls?: string[]
+          id?: string
+          paid_or_free?: string
+          workflow_description?: string
+          workflow_name?: string
+          workflow_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

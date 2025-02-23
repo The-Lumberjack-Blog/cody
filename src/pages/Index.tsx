@@ -1,13 +1,32 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import SearchBar from "@/components/SearchBar";
 import CategoryFilter from "@/components/CategoryFilter";
 import ToolCard from "@/components/ToolCard";
-import { workflows, categories } from "@/data/tools";
+import { categories } from "@/data/tools";
+import { supabase } from "@/integrations/supabase/client";
+import type { Workflow } from "@/types/workflow";
+import { useQuery } from "@tanstack/react-query";
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  const { data: workflows = [], isLoading } = useQuery({
+    queryKey: ["workflows"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("workflow")
+        .select("*");
+
+      if (error) {
+        console.error("Error fetching workflows:", error);
+        throw error;
+      }
+
+      return data as Workflow[];
+    }
+  });
 
   const filteredWorkflows = workflows.filter((workflow) => {
     const matchesSearch = workflow.workflow_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -42,13 +61,19 @@ const Index = () => {
           </aside>
           
           <main className="lg:col-span-3">
-            <div className="grid grid-cols-1 gap-6">
-              {filteredWorkflows.map((workflow) => (
-                <ToolCard key={workflow.workflow_url} workflow={workflow} />
-              ))}
-            </div>
+            {isLoading ? (
+              <div className="text-center py-12">
+                <p className="text-gray-500">Loading workflows...</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-6">
+                {filteredWorkflows.map((workflow) => (
+                  <ToolCard key={workflow.id} workflow={workflow} />
+                ))}
+              </div>
+            )}
             
-            {filteredWorkflows.length === 0 && (
+            {!isLoading && filteredWorkflows.length === 0 && (
               <div className="text-center py-12 bg-white rounded-lg shadow-sm">
                 <p className="text-gray-500 text-lg">No workflows found matching your criteria.</p>
                 <button 
