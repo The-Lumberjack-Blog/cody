@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import SearchBar from "@/components/SearchBar";
 import CategoryFilter from "@/components/CategoryFilter";
 import ToolCard from "@/components/ToolCard";
@@ -226,4 +226,3 @@ const Index = () => {
 };
 
 export default Index;
-
