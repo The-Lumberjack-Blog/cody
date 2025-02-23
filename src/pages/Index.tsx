@@ -7,10 +7,33 @@ import { categories } from "@/data/tools";
 import { supabase } from "@/integrations/supabase/client";
 import type { Workflow } from "@/types/workflow";
 import { useQuery } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
+import { Link, useNavigate } from "react-router-dom";
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [session, setSession] = useState(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/auth");
+  };
 
   const { data: workflows = [], isLoading } = useQuery({
     queryKey: ["workflows"],
@@ -41,7 +64,18 @@ const Index = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="bg-black text-white py-16">
         <div className="container mx-auto px-4">
-          <h1 className="text-5xl font-bold mb-4 max-w-2xl">Discover Powerful AI Workflows</h1>
+          <div className="flex justify-between items-center mb-8">
+            <h1 className="text-5xl font-bold max-w-2xl">Discover Powerful AI Workflows</h1>
+            {session ? (
+              <Button onClick={handleLogout} variant="outline">
+                Sign Out
+              </Button>
+            ) : (
+              <Link to="/auth">
+                <Button variant="outline">Sign In</Button>
+              </Link>
+            )}
+          </div>
           <p className="text-xl text-gray-300 max-w-xl mb-8">
             Find and implement pre-built AI workflows to automate your business processes and boost productivity
           </p>
