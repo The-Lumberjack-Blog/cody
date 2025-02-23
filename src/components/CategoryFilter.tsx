@@ -27,16 +27,45 @@ const CategoryFilter = ({ selectedCategory, onSelectCategory }: CategoryFilterPr
     }
   });
 
-  // Helper function to format category name from URL slug
+  // Enhanced helper function to format category name from URL slug
   const formatCategoryName = (categoryUrl: string) => {
+    // Common word replacements for better readability
+    const commonReplacements: Record<string, string> = {
+      'ai': 'AI',
+      'llm': 'LLM',
+      'nlp': 'NLP',
+      'ml': 'ML',
+      'api': 'API',
+      'apis': 'APIs',
+      'cms': 'CMS',
+      'seo': 'SEO',
+      'ui': 'UI',
+      'ux': 'UX',
+      'pdf': 'PDF',
+      'csv': 'CSV',
+    };
+
     // Remove any file extension if present
     const baseName = categoryUrl.split('.')[0];
-    // Split by common delimiters and clean up
-    const words = baseName
-      .split(/[-_]/)
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(' ');
-    return words;
+    
+    // Split by common delimiters
+    const words = baseName.split(/[-_]/);
+    
+    // Process each word
+    const formattedWords = words.map(word => {
+      const lowerWord = word.toLowerCase();
+      
+      // Check if it's a common technical term that should be in uppercase
+      if (commonReplacements[lowerWord]) {
+        return commonReplacements[lowerWord];
+      }
+      
+      // Capitalize first letter of each word
+      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    });
+
+    // Join words with spaces
+    return formattedWords.join(' ');
   };
 
   if (isLoading) {
