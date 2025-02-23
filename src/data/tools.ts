@@ -1,4 +1,4 @@
-import { Headset, Percent, Box, Calculator, ChartLine, Edit, Server, Palette, List } from "lucide-react";
+import { LayoutTemplate, Brush, MessageSquare, LineChart, Bot, Database, Code, Workflow as WorkflowIcon, Share2 } from "lucide-react";
 
 export type Tool = {
   id: string;
@@ -16,15 +16,33 @@ export type Tool = {
   bookmarks: number;
 };
 
+export type Workflow = {
+  workflow_url: string;
+  workflow_name: string;
+  workflow_description: string;
+  creator_avatar: string;
+  creator_name: string;
+  created_at: string;
+  paid_or_free: "Free" | "Paid";
+  icon_urls: string[];
+  category_url?: string;
+};
+
+export type Category = {
+  name: string;
+  icon: typeof LayoutTemplate;
+  url: string;
+};
+
 export const categories = [
-  { name: "Sales", icon: Percent },
-  { name: "Back Office", icon: Box },
-  { name: "Operations", icon: Calculator },
-  { name: "Growth & Marketing", icon: ChartLine },
-  { name: "Writing & Editing", icon: Edit },
-  { name: "Technology & IT", icon: Server },
-  { name: "Design & Creative", icon: Palette },
-  { name: "Workflow Automation", icon: List },
+  { name: "Automation", icon: WorkflowIcon, url: "/automation" },
+  { name: "AI & Machine Learning", icon: Bot, url: "/ai" },
+  { name: "Analytics", icon: LineChart, url: "/analytics" },
+  { name: "Content Creation", icon: Brush, url: "/content" },
+  { name: "Communication", icon: MessageSquare, url: "/communication" },
+  { name: "Data Processing", icon: Database, url: "/data" },
+  { name: "Development", icon: Code, url: "/development" },
+  { name: "Social Media", icon: Share2, url: "/social" },
 ];
 
 export const tools: Tool[] = [
@@ -532,5 +550,22 @@ export const tools: Tool[] = [
     featured: false,
     visitUrl: "https://example.com",
     bookmarks: 234,
+  }
+];
+
+export const workflows: Workflow[] = [
+  {
+    workflow_url: "https://n8n.io/workflows/2803-generate-instagram-content-from-top-trends-with-ai-image-generation/",
+    workflow_name: "Generate Instagram Content from Top Trends with AI Image Generation",
+    workflow_description: "How it works\n\nThis automated workflow discovers trending Instagram posts and creates similar AI-generated content...",
+    creator_avatar: "https://gravatar.com/avatar/a41acdf437da5c346ea6dde03fd2967b5cb8611231c6b4d38c8292604f11f070?r=pg&d=retro&size=200",
+    creator_name: "mustafa kendigüzel",
+    created_at: "7 days ago",
+    paid_or_free: "Free",
+    icon_urls: [
+      "https://placehold.co/40x40",
+      "https://placehold.co/40x40",
+      "https://placehold.co/40x40"
+    ]
   }
 ];

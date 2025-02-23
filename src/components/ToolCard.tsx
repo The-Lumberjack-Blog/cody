@@ -1,73 +1,73 @@
+
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Star, Bookmark } from "lucide-react";
-import type { Tool } from "@/data/tools";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { CalendarDays, ExternalLink } from "lucide-react";
+import type { Workflow } from "@/data/tools";
 
 interface ToolCardProps {
-  tool: Tool;
+  workflow: Workflow;
 }
 
-const ToolCard = ({ tool }: ToolCardProps) => {
+const ToolCard = ({ workflow }: ToolCardProps) => {
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(word => word[0])
+      .join('')
+      .toUpperCase();
+  };
+
   return (
-    <Card className="p-6 hover:shadow-lg transition-all duration-300 hover:animate-card-hover">
+    <Card className="p-6 hover:shadow-lg transition-all duration-300">
       <div className="flex justify-between items-start">
-        <div className="flex items-center gap-4">
-          <img src={tool.logo} alt={tool.name} className="w-12 h-12 rounded-lg" />
-          <div>
-            <h3 className="font-semibold text-lg">{tool.name}</h3>
-            <div className="flex items-center gap-1">
-              <div className="flex">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className={`h-4 w-4 ${
-                      i < Math.floor(tool.rating) ? "text-yellow-400 fill-yellow-400" : "text-gray-300"
-                    }`}
-                  />
-                ))}
-              </div>
-              <span className="text-sm text-gray-500">({tool.reviews})</span>
+        <div className="space-y-4 flex-1">
+          <div className="flex items-center gap-4">
+            <div className="flex -space-x-2">
+              {workflow.icon_urls.slice(0, 3).map((icon, i) => (
+                <Avatar key={i} className="w-8 h-8 border-2 border-white">
+                  <AvatarImage src={icon} />
+                  <AvatarFallback>IC</AvatarFallback>
+                </Avatar>
+              ))}
+            </div>
+            <Badge variant={workflow.paid_or_free === "Free" ? "secondary" : "default"}>
+              {workflow.paid_or_free}
+            </Badge>
+          </div>
+
+          <h3 className="font-semibold text-xl">{workflow.workflow_name}</h3>
+          
+          <p className="text-gray-600 line-clamp-3">
+            {workflow.workflow_description}
+          </p>
+
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Avatar className="w-6 h-6">
+                <AvatarImage src={workflow.creator_avatar} />
+                <AvatarFallback>{getInitials(workflow.creator_name)}</AvatarFallback>
+              </Avatar>
+              <span className="text-sm text-gray-600">{workflow.creator_name}</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-gray-500">
+              <CalendarDays className="w-4 h-4" />
+              {workflow.created_at}
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-500">
-            <Bookmark className="h-4 w-4 inline mr-1" />
-            {tool.bookmarks}
-          </span>
-        </div>
       </div>
       
-      <p className="mt-4 text-gray-600">{tool.description}</p>
-      
-      <div className="mt-4 flex flex-wrap gap-2">
-        {tool.tags.map((tag) => (
-          <span
-            key={tag}
-            className="text-sm px-2 py-1 bg-blue-50 text-blue-600 rounded-full"
-          >
-            #{tag}
-          </span>
-        ))}
-      </div>
-      
-      <div className="mt-6 flex gap-3">
-        <Button
-          variant="default"
-          className="flex-1"
-          onClick={() => window.open(tool.visitUrl, "_blank")}
+      <div className="mt-6">
+        <Button 
+          variant="default" 
+          className="w-full"
+          onClick={() => window.open(workflow.workflow_url, "_blank")}
         >
-          Visit
+          View Workflow
+          <ExternalLink className="w-4 h-4 ml-2" />
         </Button>
-        {tool.dealUrl && (
-          <Button
-            variant="outline"
-            className="flex-1"
-            onClick={() => window.open(tool.dealUrl, "_blank")}
-          >
-            Get Deal
-          </Button>
-        )}
       </div>
     </Card>
   );
