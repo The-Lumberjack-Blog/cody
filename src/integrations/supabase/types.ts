@@ -441,7 +441,7 @@ export type Database = {
         Row: {
           category_id: string | null
           created_at: string | null
-          created_by: string
+          created_by: string | null
           creator_avatar: string
           creator_name: string
           icon_urls: string[]
@@ -454,7 +454,7 @@ export type Database = {
         Insert: {
           category_id?: string | null
           created_at?: string | null
-          created_by: string
+          created_by?: string | null
           creator_avatar: string
           creator_name: string
           icon_urls: string[]
@@ -467,7 +467,7 @@ export type Database = {
         Update: {
           category_id?: string | null
           created_at?: string | null
-          created_by?: string
+          created_by?: string | null
           creator_avatar?: string
           creator_name?: string
           icon_urls?: string[]

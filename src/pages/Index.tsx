@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import SearchBar from "@/components/SearchBar";
 import CategoryFilter from "@/components/CategoryFilter";
@@ -95,7 +96,7 @@ const Index = () => {
               : ['https://ui-avatars.com/api/?name=W&background=random'],
             paid_or_free: ['Free', 'Paid'].includes(workflow.paid_or_free) ? workflow.paid_or_free : 'Free',
             category_id: categoryId,
-            created_by: workflow.created_by || 'system'
+            created_by: null // Now using null instead of 'system'
           };
         });
 
@@ -223,3 +224,4 @@ const Index = () => {
 };
 
 export default Index;
+
