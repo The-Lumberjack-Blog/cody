@@ -19,16 +19,24 @@ const CategoryFilter = ({ selectedCategory, onSelectCategory }: CategoryFilterPr
 
       if (error) throw error;
 
-      return data.map(category => ({
-        name: formatCategoryName(category.category_url),
-        id: category.id,
-        url: category.category_url
-      }));
+      console.log("Raw category data:", data); // Debug log
+
+      return data.map(category => {
+        const formattedName = formatCategoryName(category.category_url);
+        console.log("Category URL:", category.category_url, "Formatted name:", formattedName); // Debug log
+        return {
+          name: formattedName,
+          id: category.id,
+          url: category.category_url
+        };
+      });
     }
   });
 
   // Enhanced helper function to format category name from URL slug
   const formatCategoryName = (categoryUrl: string) => {
+    console.log("Formatting category URL:", categoryUrl); // Debug log
+    
     // Common word replacements for better readability
     const commonReplacements: Record<string, string> = {
       'ai': 'AI',
@@ -51,6 +59,8 @@ const CategoryFilter = ({ selectedCategory, onSelectCategory }: CategoryFilterPr
     // Split by common delimiters
     const words = baseName.split(/[-_]/);
     
+    console.log("Split words:", words); // Debug log
+    
     // Process each word
     const formattedWords = words.map(word => {
       const lowerWord = word.toLowerCase();
@@ -64,8 +74,9 @@ const CategoryFilter = ({ selectedCategory, onSelectCategory }: CategoryFilterPr
       return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
     });
 
-    // Join words with spaces
-    return formattedWords.join(' ');
+    const result = formattedWords.join(' ');
+    console.log("Final formatted result:", result); // Debug log
+    return result;
   };
 
   if (isLoading) {
