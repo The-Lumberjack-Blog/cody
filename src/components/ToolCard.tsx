@@ -3,8 +3,17 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { CalendarDays, ExternalLink, ChevronRight } from "lucide-react";
+import { CalendarDays, ExternalLink, ChevronRight, Info } from "lucide-react";
 import type { Workflow } from "@/data/tools";
+import { useState } from "react";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 interface ToolCardProps {
   workflow: Workflow;
@@ -69,18 +78,59 @@ const ToolCard = ({ workflow }: ToolCardProps) => {
         </div>
       </div>
       
-      <div className="mt-6 flex justify-between items-center">
+      <div className="mt-6 flex justify-between items-center gap-4">
         <Button 
           variant="outline"
           className="group-hover:bg-black group-hover:text-white transition-all duration-300 border-gray-200"
           onClick={() => window.open(workflow.workflow_url, "_blank")}
         >
-          View Workflow
-          <ChevronRight className="w-4 h-4 ml-2" />
+          Get Workflow
+          <ExternalLink className="w-4 h-4 ml-2" />
         </Button>
+
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button variant="ghost">
+              More Details
+              <Info className="w-4 h-4 ml-2" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent className="w-[400px] sm:w-[540px]">
+            <SheetHeader>
+              <SheetTitle>{workflow.workflow_name}</SheetTitle>
+              <div className="flex items-center gap-2 text-sm text-gray-500 mt-2">
+                <Avatar className="w-6 h-6">
+                  <AvatarImage src={workflow.creator_avatar} />
+                  <AvatarFallback>{getInitials(workflow.creator_name)}</AvatarFallback>
+                </Avatar>
+                <span>{workflow.creator_name}</span>
+              </div>
+            </SheetHeader>
+            <div className="mt-6">
+              <Badge variant={workflow.paid_or_free === "Free" ? "secondary" : "default"}>
+                {workflow.paid_or_free}
+              </Badge>
+              <div className="mt-4 prose prose-gray">
+                <p className="text-gray-600 text-base leading-relaxed whitespace-pre-wrap">
+                  {workflow.workflow_description}
+                </p>
+              </div>
+              <div className="mt-6">
+                <Button 
+                  className="w-full"
+                  onClick={() => window.open(workflow.workflow_url, "_blank")}
+                >
+                  Get Workflow
+                  <ExternalLink className="w-4 h-4 ml-2" />
+                </Button>
+              </div>
+            </div>
+          </SheetContent>
+        </Sheet>
       </div>
     </Card>
   );
 };
 
 export default ToolCard;
+
