@@ -20,6 +20,7 @@ export function ChatWidget() {
   const [isLoading, setIsLoading] = useState(false);
   const [consultingMode, setConsultingMode] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [userApiKey, setUserApiKey] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -39,17 +40,16 @@ export function ChatWidget() {
 
       if (!data) {
         setShowModal(true);
+      } else if (data.gemini_api_key) {
+        setUserApiKey(data.gemini_api_key);
       }
     } catch (error) {
       console.error("Error checking first time visitor:", error);
     }
   };
 
-  const handleApiKeySubmit = () => {
-    toast({
-      title: "Coming Soon",
-      description: "API key support will be available soon!",
-    });
+  const handleApiKeySubmit = async () => {
+    await checkFirstTimeVisitor();
     setShowModal(false);
   };
 
@@ -104,7 +104,8 @@ export function ChatWidget() {
         body: {
           userInput: textToSubmit,
           threadId,
-          consultingMode
+          consultingMode,
+          apiKey: userApiKey
         }
       });
 

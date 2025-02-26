@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { ExternalLink } from "lucide-react";
 
 interface CodyModalProps {
   open: boolean;
@@ -20,6 +21,7 @@ interface CodyModalProps {
 
 export function CodyModal({ open, onOpenChange, onApiKeySubmit }: CodyModalProps) {
   const [email, setEmail] = useState("");
+  const [apiKey, setApiKey] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
@@ -65,6 +67,50 @@ export function CodyModal({ open, onOpenChange, onApiKeySubmit }: CodyModalProps
     }
   };
 
+  const handleApiKeySubmit = async () => {
+    if (!apiKey) {
+      toast({
+        title: "Invalid API key",
+        description: "Please enter your Gemini API key",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch("https://api.ipify.org?format=json");
+      const { ip } = await response.json();
+
+      const { error } = await supabase.from("cody").insert([
+        {
+          ip_address: ip,
+          apikey: true,
+          gemini_api_key: apiKey,
+        },
+      ]);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success!",
+        description: "Your API key has been saved.",
+      });
+      onApiKeySubmit();
+      onOpenChange(false);
+    } catch (error) {
+      console.error("Error saving API key:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save API key. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-chatbg border-gray-700 text-white">
@@ -75,13 +121,34 @@ export function CodyModal({ open, onOpenChange, onApiKeySubmit }: CodyModalProps
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-6">
-          <Button
-            onClick={onApiKeySubmit}
-            className="w-full bg-blue-600 hover:bg-blue-700"
-            disabled={isSubmitting}
-          >
-            Use Your Own API Key
-          </Button>
+          <div className="space-y-4">
+            <Input
+              type="password"
+              placeholder="Enter your Gemini API key"
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              className="bg-inputbg border-gray-700 text-white"
+              disabled={isSubmitting}
+            />
+            <div className="flex items-center gap-2 text-sm text-gray-400">
+              <ExternalLink className="h-4 w-4" />
+              <a
+                href="https://ai.google.dev/gemini-api/docs/api-key"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-white"
+              >
+                How can I get an API key?
+              </a>
+            </div>
+            <Button
+              onClick={handleApiKeySubmit}
+              className="w-full bg-blue-600 hover:bg-blue-700"
+              disabled={isSubmitting}
+            >
+              Use Your Own API Key
+            </Button>
+          </div>
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t border-gray-700" />
