@@ -100,7 +100,7 @@ export function ChatWidget() {
       <Input
         value={input}
         onChange={(e) => setInput(e.target.value)}
-        placeholder="Message AI Workflow Assistant..."
+        placeholder="Message Cody..."
         disabled={isLoading}
         className="w-full bg-inputbg border-0 focus-visible:ring-0 text-white placeholder:text-gray-400 py-6"
       />
@@ -216,7 +216,7 @@ export function ChatWidget() {
             <div className="max-w-3xl mx-auto">
               {renderInputField()}
               <div className="mt-2 text-center text-xs text-gray-500">
-                AI Workflow Assistant can make mistakes. Check important info.
+                Cody can make mistakes. Check important info.
               </div>
             </div>
           </div>
