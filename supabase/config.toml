@@ -1,4 +1,5 @@
 
 project_id = "zzzlixfjazmsasjpqtuh"
+
 [functions.chat-with-assistant]
 verify_jwt = false

@@ -2,8 +2,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MessageSquare, Send } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { MessageSquare, Send, Loader } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 interface ChatMessage {
@@ -69,26 +69,33 @@ export function ChatWidget() {
           </div>
           
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {messages.map((message, index) => (
-              <div
-                key={index}
-                className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
-              >
-                <div
-                  className={`max-w-[80%] p-3 rounded-lg ${
-                    message.isUser
-                      ? 'bg-black text-white ml-4'
-                      : 'bg-gray-100 text-black mr-4'
-                  }`}
-                >
-                  {message.text}
-                </div>
+            {messages.length === 0 ? (
+              <div className="text-center text-gray-500 py-8">
+                Ask me about your workflow needs and I'll help you find the right solution!
               </div>
-            ))}
+            ) : (
+              messages.map((message, index) => (
+                <div
+                  key={index}
+                  className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div
+                    className={`max-w-[80%] p-3 rounded-lg ${
+                      message.isUser
+                        ? 'bg-black text-white ml-4'
+                        : 'bg-gray-100 text-black mr-4'
+                    }`}
+                  >
+                    {message.text}
+                  </div>
+                </div>
+              ))
+            )}
             {isLoading && (
               <div className="flex justify-start">
-                <div className="bg-gray-100 text-black p-3 rounded-lg mr-4">
-                  Typing...
+                <div className="bg-gray-100 text-black p-3 rounded-lg mr-4 flex items-center gap-2">
+                  <Loader className="h-4 w-4 animate-spin" />
+                  Thinking...
                 </div>
               </div>
             )}
