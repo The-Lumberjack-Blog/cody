@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Send, Loader, ExternalLink, Mic, Plus, Search } from "lucide-react";
+import { Send, Loader, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from "react-markdown";
@@ -104,6 +104,15 @@ export function ChatWidget() {
     </form>
   );
 
+  const searchTerms = [
+    { text: "AI agent for tracking financials", color: "#F97316" },
+    { text: "Personal Assistant Agent", color: "#8B5CF6" },
+    { text: "Content Writer AI", color: "#0EA5E9" },
+    { text: "Database Search", color: "#9b87f5" },
+    { text: "Viral Reels", color: "#D946EF" },
+    { text: "Email Assistant", color: "#33C3F0" },
+  ];
+
   return (
     <div className="fixed inset-0 bg-chatbg text-gray-100">
       <div className="flex flex-col h-full max-w-3xl mx-auto">
@@ -118,13 +127,33 @@ export function ChatWidget() {
                   {renderInputField()}
                 </div>
                 <div className="grid grid-cols-2 gap-2">
-                  <button className="text-left p-4 bg-inputbg hover:bg-messagebg rounded-lg transition-colors">
+                  <button className="text-left p-4 bg-inputbg hover:bg-messagebg rounded-lg transition-colors group">
                     <span className="block text-sm font-medium mb-2">Solve</span>
-                    <span className="text-xs text-gray-400">Get step-by-step guidance</span>
+                    <div className="space-y-1">
+                      {searchTerms.slice(0, 3).map((term, index) => (
+                        <span 
+                          key={index} 
+                          className="block text-xs"
+                          style={{ color: term.color }}
+                        >
+                          {term.text}
+                        </span>
+                      ))}
+                    </div>
                   </button>
                   <button className="text-left p-4 bg-inputbg hover:bg-messagebg rounded-lg transition-colors">
                     <span className="block text-sm font-medium mb-2">Deep research</span>
-                    <span className="text-xs text-gray-400">Find detailed insights</span>
+                    <div className="space-y-1">
+                      {searchTerms.slice(3).map((term, index) => (
+                        <span 
+                          key={index} 
+                          className="block text-xs"
+                          style={{ color: term.color }}
+                        >
+                          {term.text}
+                        </span>
+                      ))}
+                    </div>
                   </button>
                 </div>
               </div>
@@ -204,4 +233,3 @@ export function ChatWidget() {
     </div>
   );
 }
-
