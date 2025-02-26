@@ -6,23 +6,25 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from "react-markdown";
 import { Card } from "@/components/ui/card";
+
 interface ChatMessage {
   text: string;
   isUser: boolean;
 }
+
 export function ChatWidget() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [threadId, setThreadId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const {
-    toast
-  } = useToast();
+  const { toast } = useToast();
+
   const extractUrls = (text: string) => {
     const urlRegex = /https:\/\/n8n\.io\/[^\s\n)]+/g;
     const urls = text.match(urlRegex) || [];
     return urls;
   };
+
   const getWorkflowName = (text: string, url: string) => {
     const boldRegex = /\*\*(.*?)\*\*/g;
     const matches = [...text.matchAll(boldRegex)];
@@ -38,35 +40,48 @@ export function ChatWidget() {
     const lastPart = parts[parts.length - 1];
     return lastPart.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
   };
-  const handleSubmit = async (e?: React.FormEvent) => {
+
+  const handleSubmit = async (e?: React.FormEvent, searchTerm?: string) => {
     if (e) {
       e.preventDefault();
     }
-    if (!input.trim() || isLoading) return;
-    const userMessage = input.trim();
-    setInput("");
+
+    const textToSubmit = searchTerm || input.trim();
+    console.log("Submitting text:", textToSubmit); // Debug log
+
+    if (!textToSubmit || isLoading) {
+      console.log("Early return - empty text or loading"); // Debug log
+      return;
+    }
+
+    if (!searchTerm) {
+      setInput("");
+    }
+
     setMessages(prev => [...prev, {
-      text: userMessage,
+      text: textToSubmit,
       isUser: true
     }]);
+    
     setIsLoading(true);
+
     try {
-      const {
-        data,
-        error
-      } = await supabase.functions.invoke('chat-with-assistant', {
+      const { data, error } = await supabase.functions.invoke('chat-with-assistant', {
         body: {
-          userInput: userMessage,
+          userInput: textToSubmit,
           threadId
         }
       });
+
       if (error) {
         console.error('Supabase function error:', error);
         throw error;
       }
+
       if (!data || !data.response) {
         throw new Error('Invalid response from assistant');
       }
+
       setThreadId(data.threadId);
       setMessages(prev => [...prev, {
         text: data.response,
@@ -83,36 +98,41 @@ export function ChatWidget() {
       setIsLoading(false);
     }
   };
+
   const handleQuickSearch = (searchTerm: string) => {
     if (isLoading) return;
-    setInput(searchTerm);
-    requestAnimationFrame(() => {
-      handleSubmit();
-    });
+    console.log("Quick search term:", searchTerm); // Debug log
+    setInput(searchTerm); // Update input field visually
+    handleSubmit(undefined, searchTerm); // Pass the search term directly to handleSubmit
   };
-  const renderInputField = () => <form onSubmit={handleSubmit} className="relative flex items-center">
-      <Input value={input} onChange={e => setInput(e.target.value)} placeholder="Tell Cody what you want to automate..." disabled={isLoading} className="w-full bg-inputbg border-0 focus-visible:ring-0 text-white placeholder:text-gray-400 py-6" />
-      <Button type="submit" disabled={isLoading || !input.trim()} size="icon" className="absolute right-2 bg-transparent hover:bg-messagebg text-gray-400 hover:text-white">
+
+  const renderInputField = () => (
+    <form onSubmit={handleSubmit} className="relative flex items-center">
+      <Input
+        value={input}
+        onChange={e => setInput(e.target.value)}
+        placeholder="Tell Cody what you want to automate..."
+        disabled={isLoading}
+        className="w-full bg-inputbg border-0 focus-visible:ring-0 text-white placeholder:text-gray-400 py-6"
+      />
+      <Button
+        type="submit"
+        disabled={isLoading || !input.trim()}
+        size="icon"
+        className="absolute right-2 bg-transparent hover:bg-messagebg text-gray-400 hover:text-white"
+      >
         <Send className="h-4 w-4" />
       </Button>
-    </form>;
-  const searchTerms = [{
-    text: "Financial Agent",
-    icon: "💰",
-    color: "#F97316"
-  }, {
-    text: "Content Writer",
-    icon: "📝",
-    color: "#0EA5E9"
-  }, {
-    text: "Viral Reels",
-    icon: "📱",
-    color: "#D946EF"
-  }, {
-    text: "Email Agent",
-    icon: "📧",
-    color: "#33C3F0"
-  }];
+    </form>
+  );
+
+  const searchTerms = [
+    { text: "Financial Agent", icon: "💰", color: "#F97316" },
+    { text: "Content Writer", icon: "📝", color: "#0EA5E9" },
+    { text: "Viral Reels", icon: "📱", color: "#D946EF" },
+    { text: "Email Agent", icon: "📧", color: "#33C3F0" }
+  ];
+
   return <div className="fixed inset-0 bg-chatbg text-gray-100">
       <div className="flex flex-col h-full max-w-3xl mx-auto">
         <div className="flex-1 overflow-y-auto">
