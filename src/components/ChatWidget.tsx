@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -111,23 +110,36 @@ export function ChatWidget() {
   };
 
   const renderInputField = () => (
-    <form onSubmit={handleSubmit} className="relative flex items-center">
-      <Input
-        value={input}
-        onChange={e => setInput(e.target.value)}
-        placeholder="Tell Cody what you want to automate..."
-        disabled={isLoading}
-        className="w-full bg-inputbg border-0 focus-visible:ring-0 text-white placeholder:text-gray-400 py-6"
-      />
-      <Button
-        type="submit"
-        disabled={isLoading || !input.trim()}
-        size="icon"
-        className="absolute right-2 bg-transparent hover:bg-messagebg text-gray-400 hover:text-white"
-      >
-        <Send className="h-4 w-4" />
-      </Button>
-    </form>
+    <div className="space-y-2">
+      <form onSubmit={handleSubmit} className="relative flex items-center">
+        <Input
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          placeholder="Tell Cody what you want to automate..."
+          disabled={isLoading}
+          className="w-full bg-inputbg border-0 focus-visible:ring-0 text-white placeholder:text-gray-400 py-6"
+        />
+        <Button
+          type="submit"
+          disabled={isLoading || !input.trim()}
+          size="icon"
+          className="absolute right-2 bg-transparent hover:bg-messagebg text-gray-400 hover:text-white"
+        >
+          <Send className="h-4 w-4" />
+        </Button>
+      </form>
+      <div className="flex items-center gap-2 px-2">
+        <Switch
+          id="consulting-mode"
+          checked={consultingMode}
+          onCheckedChange={setConsultingMode}
+          className="data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-[#888888]"
+        />
+        <label htmlFor="consulting-mode" className="text-sm text-gray-300">
+          Consulting Mode
+        </label>
+      </div>
+    </div>
   );
 
   const searchTerms = [
@@ -140,19 +152,6 @@ export function ChatWidget() {
   return (
     <div className="fixed inset-0 bg-chatbg text-gray-100">
       <div className="flex flex-col h-full max-w-3xl mx-auto">
-        <div className="flex items-center justify-center p-4 border-b border-gray-700">
-          <div className="flex items-center gap-2">
-            <Switch
-              id="consulting-mode"
-              checked={consultingMode}
-              onCheckedChange={setConsultingMode}
-            />
-            <label htmlFor="consulting-mode" className="text-sm text-gray-300">
-              Consulting Mode
-            </label>
-          </div>
-        </div>
-
         <div className="flex-1 overflow-y-auto">
           {messages.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center px-4">
@@ -181,7 +180,8 @@ export function ChatWidget() {
             </div>
           ) : (
             <div className="space-y-6 p-4">
-              {messages.map((message, index) => <div key={index} className="space-y-4">
+              {messages.map((message, index) => (
+                <div key={index} className="space-y-4">
                   <div className={`flex ${message.isUser ? 'bg-chatbg' : 'bg-messagebg'}`}>
                     <div className="max-w-3xl mx-auto w-full px-4 py-6">
                       <div className="flex gap-4">
@@ -206,7 +206,8 @@ export function ChatWidget() {
                           </div>
                         </Card>)}
                     </div>}
-                </div>)}
+                </div>
+              ))}
               {isLoading && <div className="bg-messagebg">
                   <div className="max-w-3xl mx-auto px-4 py-6">
                     <div className="flex gap-4">
@@ -238,4 +239,3 @@ export function ChatWidget() {
     </div>
   );
 }
-
