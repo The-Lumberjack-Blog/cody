@@ -133,25 +133,37 @@ export function ChatWidget() {
     { text: "Email Agent", icon: "📧", color: "#33C3F0" }
   ];
 
-  return <div className="fixed inset-0 bg-chatbg text-gray-100">
+  return (
+    <div className="fixed inset-0 bg-chatbg text-gray-100">
       <div className="flex flex-col h-full max-w-3xl mx-auto">
         <div className="flex-1 overflow-y-auto">
-          {messages.length === 0 ? <div className="h-full flex flex-col items-center justify-center px-4">
-              <h1 className="text-4xl font-semibold mb-8 text-gray-200">👋 Hey I'm Cody.</h1>
+          {messages.length === 0 ? (
+            <div className="h-full flex flex-col items-center justify-center px-4">
+              <h1 className="text-4xl font-semibold mb-8 text-gray-200">
+                👋 Hey I'm Cody.
+              </h1>
               <div className="w-full max-w-2xl">
-                <div className="mb-6">
-                  {renderInputField()}
-                </div>
+                <div className="mb-6">{renderInputField()}</div>
                 <div className="flex flex-wrap gap-2 justify-center">
-                  {searchTerms.map((term, index) => <Button key={index} onClick={() => handleQuickSearch(term.text)} className="bg-inputbg hover:bg-messagebg text-sm px-4 py-2 rounded-full border border-gray-700" variant="ghost">
+                  {searchTerms.map((term, index) => (
+                    <Button
+                      key={index}
+                      onClick={() => handleQuickSearch(term.text)}
+                      className="bg-inputbg hover:bg-messagebg text-sm px-4 py-2 rounded-full border border-gray-700"
+                      variant="ghost"
+                    >
                       <span className="mr-2">{term.icon}</span>
-                      <span style={{
-                  color: term.color
-                }}>{term.text}</span>
-                    </Button>)}
+                      <span style={{ color: term.color }}>{term.text}</span>
+                    </Button>
+                  ))}
+                </div>
+                <div className="mt-4 text-center text-xs text-gray-500">
+                  Cody can say dumb things sometimes. Oh and it doesn't store any of your data.
                 </div>
               </div>
-            </div> : <div className="space-y-6 p-4">
+            </div>
+          ) : (
+            <div className="space-y-6 p-4">
               {messages.map((message, index) => <div key={index} className="space-y-4">
                   <div className={`flex ${message.isUser ? 'bg-chatbg' : 'bg-messagebg'}`}>
                     <div className="max-w-3xl mx-auto w-full px-4 py-6">
@@ -191,17 +203,21 @@ export function ChatWidget() {
                     </div>
                   </div>
                 </div>}
-            </div>}
+            </div>
+          )}
         </div>
         
-        {messages.length > 0 && <div className="p-4 border-t border-gray-700">
+        {messages.length > 0 && (
+          <div className="p-4 border-t border-gray-700">
             <div className="max-w-3xl mx-auto">
               {renderInputField()}
               <div className="mt-2 text-center text-xs text-gray-500">
-                Cody can make mistakes. Check important info.
+                Cody can say dumb things sometimes. Oh and it doesn't store any of your data.
               </div>
             </div>
-          </div>}
+          </div>
+        )}
       </div>
-    </div>;
+    </div>
+  );
 }
