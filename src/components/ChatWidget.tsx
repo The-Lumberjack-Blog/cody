@@ -84,6 +84,26 @@ export function ChatWidget() {
     }
   };
 
+  const renderInputField = () => (
+    <form onSubmit={handleSubmit} className="relative flex items-center">
+      <Input
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        placeholder="Message AI Workflow Assistant..."
+        disabled={isLoading}
+        className="w-full bg-inputbg border-0 focus-visible:ring-0 text-white placeholder:text-gray-400 py-6"
+      />
+      <Button 
+        type="submit" 
+        disabled={isLoading || !input.trim()}
+        size="icon"
+        className="absolute right-2 bg-transparent hover:bg-messagebg text-gray-400 hover:text-white"
+      >
+        <Send className="h-4 w-4" />
+      </Button>
+    </form>
+  );
+
   return (
     <div className="fixed inset-0 bg-chatbg text-gray-100">
       <div className="flex flex-col h-full max-w-3xl mx-auto">
@@ -94,11 +114,8 @@ export function ChatWidget() {
                 What can I help with?
               </h1>
               <div className="w-full max-w-2xl">
-                <div className="flex items-center gap-2 p-4 bg-inputbg rounded-lg mb-6">
-                  <Plus className="h-5 w-5 text-gray-400" />
-                  <Search className="h-5 w-5 text-gray-400" />
-                  <span className="text-gray-400">Ask anything</span>
-                  <Mic className="h-5 w-5 text-gray-400 ml-auto" />
+                <div className="mb-6">
+                  {renderInputField()}
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <button className="text-left p-4 bg-inputbg hover:bg-messagebg rounded-lg transition-colors">
@@ -173,31 +190,18 @@ export function ChatWidget() {
           )}
         </div>
         
-        <div className="p-4 border-t border-gray-700">
-          <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
-            <div className="relative flex items-center">
-              <Input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Message AI Workflow Assistant..."
-                disabled={isLoading}
-                className="w-full bg-inputbg border-0 focus-visible:ring-0 text-white placeholder:text-gray-400 py-6"
-              />
-              <Button 
-                type="submit" 
-                disabled={isLoading || !input.trim()}
-                size="icon"
-                className="absolute right-2 bg-transparent hover:bg-messagebg text-gray-400 hover:text-white"
-              >
-                <Send className="h-4 w-4" />
-              </Button>
+        {messages.length > 0 && (
+          <div className="p-4 border-t border-gray-700">
+            <div className="max-w-3xl mx-auto">
+              {renderInputField()}
+              <div className="mt-2 text-center text-xs text-gray-500">
+                AI Workflow Assistant can make mistakes. Check important info.
+              </div>
             </div>
-          </form>
-          <div className="mt-2 text-center text-xs text-gray-500">
-            AI Workflow Assistant can make mistakes. Check important info.
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
 }
+
