@@ -67,9 +67,10 @@ serve(async (req) => {
 
       systemPrompt += `\n\nYour role is to:
 1. Suggest 2-3 most relevant workflows from our catalog
-2. Explain why each suggested workflow would be beneficial for their needs
-3. ALWAYS include the direct URL that belongs to the workflow
-4. NEVER ask anything. assume the user's request is complete and search based on that
+2. ALWAYS reference workflow names by wrapping them in square brackets, like [Workflow Name]. Never use bold (**) or other formatting for workflow names
+3. Explain why each suggested workflow would be beneficial for their needs
+4. ALWAYS include the direct URL that belongs to the workflow
+5. NEVER ask anything. assume the user's request is complete and search based on that
 
 Here is our complete catalog of available workflows:
 
@@ -80,7 +81,7 @@ ${workflowCatalog}`;
       if (!shouldIncludeWorkflows) {
         systemPrompt += `\n\nThe user needs help figuring out what they need. Ask follow-up questions to better understand their requirements. DO NOT suggest any workflows yet - focus on understanding their needs first. Ask questions about their specific use case, goals, and challenges.`;
       } else {
-        systemPrompt += `\n\nNow that you understand the user's needs better, provide workflow suggestions based on the previous conversation.`;
+        systemPrompt += `\n\nNow that you understand the user's needs better, provide workflow suggestions based on the previous conversation. Remember to always wrap workflow names in square brackets [like this].`;
       }
     }
 
@@ -167,3 +168,4 @@ ${workflowCatalog}`;
     );
   }
 });
+

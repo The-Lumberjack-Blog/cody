@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,8 +28,8 @@ export function ChatWidget() {
   };
 
   const getWorkflowName = (text: string, url: string) => {
-    const boldRegex = /\*\*(.*?)\*\*/g;
-    const matches = [...text.matchAll(boldRegex)];
+    const bracketRegex = /\[(.*?)\]/g;
+    const matches = [...text.matchAll(bracketRegex)];
     const urlIndex = text.indexOf(url);
     for (let i = matches.length - 1; i >= 0; i--) {
       const match = matches[i];
