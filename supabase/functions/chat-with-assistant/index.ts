@@ -23,17 +23,17 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Fetch all workflows from the database
+    // Fetch all workflows from the database - now including workflow_url
     const { data: workflows, error: workflowError } = await supabaseClient
       .from('workflow')
-      .select('workflow_name, workflow_description');
+      .select('workflow_name, workflow_description, workflow_url');
 
     if (workflowError) {
       console.error('Error fetching workflows:', workflowError);
       throw workflowError;
     }
 
-    // Create workflow catalog string
+    // Create workflow catalog string - now including URLs
     const workflowCatalog = workflows
       ?.map(w => `Workflow Name: ${w.workflow_name}\nDescription: ${w.workflow_description}\nURL: ${w.workflow_url}\n---`)
       .join('\n');
@@ -157,3 +157,4 @@ Always reference workflows by their exact names when suggesting them.`;
     );
   }
 });
+
