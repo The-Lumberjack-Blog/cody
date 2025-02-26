@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -132,7 +131,6 @@ export function ChatWidget() {
   const searchTerms = [
     { text: "Financial Agent", icon: "💰", color: "#F97316" },
     { text: "Content Writer", icon: "📝", color: "#0EA5E9" },
-    { text: "Viral Reels", icon: "📱", color: "#D946EF" },
     { text: "Email Agent", icon: "📧", color: "#33C3F0" }
   ];
 
