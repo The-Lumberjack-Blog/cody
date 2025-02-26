@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -24,6 +25,8 @@ export default {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        chatbg: "#1A1F2C",
+        messagebg: "#2A2F3C",
         primary: {
           DEFAULT: "#000000",
           hover: "#1a1a1a",

@@ -28,20 +28,17 @@ export function ChatWidget() {
   };
 
   const getWorkflowName = (text: string, url: string) => {
-    // Extract workflow names that are wrapped in ** (bold markdown)
     const boldRegex = /\*\*(.*?)\*\*/g;
     const matches = [...text.matchAll(boldRegex)];
     
-    // Find the workflow name that appears before the URL
     const urlIndex = text.indexOf(url);
     for (let i = matches.length - 1; i >= 0; i--) {
       const match = matches[i];
       if (match.index && match.index < urlIndex) {
-        return match[1]; // Return the text between ** marks
+        return match[1];
       }
     }
     
-    // Fallback to URL-based name if no bold text is found
     const cleanUrl = url.replace(/[.,]$/, '');
     const parts = cleanUrl.split('/');
     const lastPart = parts[parts.length - 1];
@@ -91,15 +88,15 @@ export function ChatWidget() {
   };
 
   return (
-    <div className="fixed inset-0 bg-white">
+    <div className="fixed inset-0 bg-chatbg text-gray-100">
       <div className="flex flex-col h-full max-w-4xl mx-auto">
-        <div className="p-4 border-b bg-black text-white">
-          <h3 className="font-semibold text-xl">AI Workflow Assistant</h3>
+        <div className="p-4 border-b border-gray-700 bg-messagebg">
+          <h3 className="font-semibold text-xl text-white">AI Workflow Assistant</h3>
         </div>
         
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {messages.length === 0 ? (
-            <div className="text-center text-gray-500 py-8">
+            <div className="text-center text-gray-400 py-8">
               Ask me about your workflow needs and I'll help you find the right solution!
             </div>
           ) : (
@@ -111,8 +108,8 @@ export function ChatWidget() {
                   <div
                     className={`max-w-[80%] p-3 rounded-lg ${
                       message.isUser
-                        ? 'bg-black text-white ml-4'
-                        : 'bg-gray-100 text-black mr-4'
+                        ? 'bg-messagebg border border-gray-700 text-white'
+                        : 'bg-messagebg border border-gray-700 text-white'
                     }`}
                   >
                     {message.isUser ? (
@@ -120,7 +117,7 @@ export function ChatWidget() {
                     ) : (
                       <ReactMarkdown
                         components={{
-                          p: ({ children }) => <p className="prose prose-sm max-w-none">{children}</p>
+                          p: ({ children }) => <p className="prose prose-sm max-w-none text-gray-100">{children}</p>
                         }}
                       >
                         {message.text}
@@ -130,23 +127,20 @@ export function ChatWidget() {
                 </div>
                 {!message.isUser && extractUrls(message.text).length > 0 && (
                   <div className="pl-4 grid gap-2">
-                    {extractUrls(message.text).map((url, urlIndex) => {
-                      console.log('Rendering URL card:', url);
-                      return (
-                        <Card 
-                          key={urlIndex}
-                          className="p-4 hover:shadow-lg transition-shadow cursor-pointer border border-gray-200 hover:border-black"
-                          onClick={() => window.open(url, '_blank')}
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium text-gray-800 truncate flex-1">
-                              {getWorkflowName(message.text, url)}
-                            </span>
-                            <ExternalLink className="h-4 w-4 ml-2 text-gray-500" />
-                          </div>
-                        </Card>
-                      );
-                    })}
+                    {extractUrls(message.text).map((url, urlIndex) => (
+                      <Card 
+                        key={urlIndex}
+                        className="p-4 hover:shadow-lg transition-shadow cursor-pointer bg-messagebg border-gray-700 hover:border-gray-500"
+                        onClick={() => window.open(url, '_blank')}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-gray-200 truncate flex-1">
+                            {getWorkflowName(message.text, url)}
+                          </span>
+                          <ExternalLink className="h-4 w-4 ml-2 text-gray-400" />
+                        </div>
+                      </Card>
+                    ))}
                   </div>
                 )}
               </div>
@@ -154,7 +148,7 @@ export function ChatWidget() {
           )}
           {isLoading && (
             <div className="flex justify-start">
-              <div className="bg-gray-100 text-black p-3 rounded-lg mr-4 flex items-center gap-2">
+              <div className="bg-messagebg border border-gray-700 text-white p-3 rounded-lg mr-4 flex items-center gap-2">
                 <Loader className="h-4 w-4 animate-spin" />
                 Thinking...
               </div>
@@ -162,18 +156,19 @@ export function ChatWidget() {
           )}
         </div>
         
-        <form onSubmit={handleSubmit} className="p-4 border-t flex gap-2">
+        <form onSubmit={handleSubmit} className="p-4 border-t border-gray-700 bg-messagebg flex gap-2">
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Type your message..."
             disabled={isLoading}
-            className="flex-1"
+            className="flex-1 bg-chatbg border-gray-700 text-white placeholder:text-gray-400"
           />
           <Button 
             type="submit" 
             disabled={isLoading || !input.trim()}
             size="icon"
+            className="bg-gray-700 hover:bg-gray-600 text-white"
           >
             <Send className="h-4 w-4" />
           </Button>
