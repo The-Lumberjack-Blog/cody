@@ -27,12 +27,24 @@ export function ChatWidget() {
     return urls;
   };
 
-  const getWorkflowName = (url: string) => {
-    // Remove any trailing punctuation and get the last part of the URL
+  const getWorkflowName = (text: string, url: string) => {
+    // Extract workflow names that are wrapped in ** (bold markdown)
+    const boldRegex = /\*\*(.*?)\*\*/g;
+    const matches = [...text.matchAll(boldRegex)];
+    
+    // Find the workflow name that appears before the URL
+    const urlIndex = text.indexOf(url);
+    for (let i = matches.length - 1; i >= 0; i--) {
+      const match = matches[i];
+      if (match.index && match.index < urlIndex) {
+        return match[1]; // Return the text between ** marks
+      }
+    }
+    
+    // Fallback to URL-based name if no bold text is found
     const cleanUrl = url.replace(/[.,]$/, '');
     const parts = cleanUrl.split('/');
     const lastPart = parts[parts.length - 1];
-    // Replace hyphens with spaces and capitalize each word
     return lastPart
       .split('-')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
@@ -128,7 +140,7 @@ export function ChatWidget() {
                         >
                           <div className="flex items-center justify-between">
                             <span className="text-sm font-medium text-gray-800 truncate flex-1">
-                              {getWorkflowName(url)}
+                              {getWorkflowName(message.text, url)}
                             </span>
                             <ExternalLink className="h-4 w-4 ml-2 text-gray-500" />
                           </div>
