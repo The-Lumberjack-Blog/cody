@@ -20,9 +20,9 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Initializing OpenAI client...');
     const openai = new OpenAI({
       apiKey: Deno.env.get('OPENAI_API_KEY')!,
-      baseURL: "https://oai.hconeai.com/v1",
       defaultHeaders: {
         'OpenAI-Beta': 'assistants=v2'
       }
@@ -94,14 +94,17 @@ serve(async (req) => {
     // Wait for the run to complete
     let runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
     while (runStatus.status === "queued" || runStatus.status === "in_progress") {
-      console.log('Waiting for assistant response...');
+      console.log('Waiting for assistant response...', runStatus.status);
       await new Promise(resolve => setTimeout(resolve, 1000));
       runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
     }
 
     if (runStatus.status === "failed") {
+      console.error('Assistant run failed:', runStatus.last_error);
       throw new Error(`Assistant run failed: ${runStatus.last_error?.message || "Unknown error"}`);
     }
+
+    console.log('Run completed with status:', runStatus.status);
 
     // Get the assistant's response
     const messages = await openai.beta.threads.messages.list(thread.id);
