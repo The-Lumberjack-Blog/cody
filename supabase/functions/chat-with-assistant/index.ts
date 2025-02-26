@@ -2,12 +2,23 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import OpenAI from "https://esm.sh/openai@4";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+interface ChatResponse {
+  id: string;
+  choices: Array<{
+    index: number;
+    message: {
+      role: string;
+      content: string;
+    };
+    finish_reason: string;
+  }>;
+}
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -23,11 +34,6 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
-
-    // Initialize OpenAI client
-    const openai = new OpenAI({
-      apiKey: Deno.env.get('OPENAI_API_KEY'),
-    });
 
     // Fetch all workflows from the database
     const { data: workflows, error: workflowError } = await supabaseClient
@@ -78,17 +84,31 @@ Always reference workflows by their exact names when suggesting them.`;
       ]) ?? [];
     }
 
-    // Create chat completion
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [
-        { role: "system", content: systemPrompt },
-        ...previousMessages,
-        { role: "user", content: userInput }
-      ],
+    // Make request to OpenAI API directly
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          ...previousMessages,
+          { role: 'user', content: userInput }
+        ],
+      }),
     });
 
-    const assistantResponse = completion.choices[0]?.message?.content || "I'm sorry, I couldn't process that request.";
+    if (!response.ok) {
+      const error = await response.json();
+      console.error('OpenAI API error:', error);
+      throw new Error('Failed to get response from OpenAI');
+    }
+
+    const data: ChatResponse = await response.json();
+    const assistantResponse = data.choices[0]?.message?.content || "I'm sorry, I couldn't process that request.";
 
     // Generate new threadId if it doesn't exist
     const newThreadId = threadId || crypto.randomUUID();
@@ -134,3 +154,4 @@ Always reference workflows by their exact names when suggesting them.`;
     );
   }
 });
+
