@@ -25,8 +25,9 @@ export default {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
-        chatbg: "#1A1F2C",
-        messagebg: "#2A2F3C",
+        chatbg: "#343541",
+        messagebg: "#444654",
+        inputbg: "#40414F",
         primary: {
           DEFAULT: "#000000",
           hover: "#1a1a1a",
@@ -35,15 +36,6 @@ export default {
         card: {
           DEFAULT: "white",
           hover: "#f8fafc",
-        },
-      },
-      animation: {
-        "card-hover": "card-hover 0.3s ease-out forwards",
-      },
-      keyframes: {
-        "card-hover": {
-          "0%": { transform: "translateY(0)" },
-          "100%": { transform: "translateY(-4px)" },
         },
       },
     },

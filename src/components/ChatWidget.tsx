@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Send, Loader, ExternalLink } from "lucide-react";
+import { Send, Loader, ExternalLink, Mic, Plus, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from "react-markdown";
@@ -23,7 +23,6 @@ export function ChatWidget() {
   const extractUrls = (text: string) => {
     const urlRegex = /https:\/\/n8n\.io\/[^\s\n)]+/g;
     const urls = text.match(urlRegex) || [];
-    console.log('Extracted URLs:', urls);
     return urls;
   };
 
@@ -71,8 +70,6 @@ export function ChatWidget() {
         throw new Error('Invalid response from assistant');
       }
 
-      console.log('Assistant response:', data.response);
-      
       setThreadId(data.threadId);
       setMessages(prev => [...prev, { text: data.response, isUser: false }]);
     } catch (error) {
@@ -89,90 +86,117 @@ export function ChatWidget() {
 
   return (
     <div className="fixed inset-0 bg-chatbg text-gray-100">
-      <div className="flex flex-col h-full max-w-4xl mx-auto">
-        <div className="p-4 border-b border-gray-700 bg-messagebg">
-          <h3 className="font-semibold text-xl text-white">AI Workflow Assistant</h3>
-        </div>
-        
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex flex-col h-full max-w-3xl mx-auto">
+        <div className="flex-1 overflow-y-auto">
           {messages.length === 0 ? (
-            <div className="text-center text-gray-400 py-8">
-              Ask me about your workflow needs and I'll help you find the right solution!
+            <div className="h-full flex flex-col items-center justify-center px-4">
+              <h1 className="text-4xl font-semibold mb-8 text-gray-200">
+                What can I help with?
+              </h1>
+              <div className="w-full max-w-2xl">
+                <div className="flex items-center gap-2 p-4 bg-inputbg rounded-lg mb-6">
+                  <Plus className="h-5 w-5 text-gray-400" />
+                  <Search className="h-5 w-5 text-gray-400" />
+                  <span className="text-gray-400">Ask anything</span>
+                  <Mic className="h-5 w-5 text-gray-400 ml-auto" />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <button className="text-left p-4 bg-inputbg hover:bg-messagebg rounded-lg transition-colors">
+                    <span className="block text-sm font-medium mb-2">Solve</span>
+                    <span className="text-xs text-gray-400">Get step-by-step guidance</span>
+                  </button>
+                  <button className="text-left p-4 bg-inputbg hover:bg-messagebg rounded-lg transition-colors">
+                    <span className="block text-sm font-medium mb-2">Deep research</span>
+                    <span className="text-xs text-gray-400">Find detailed insights</span>
+                  </button>
+                </div>
+              </div>
             </div>
           ) : (
-            messages.map((message, index) => (
-              <div key={index} className="space-y-4">
-                <div
-                  className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
-                >
-                  <div
-                    className={`max-w-[80%] p-3 rounded-lg ${
-                      message.isUser
-                        ? 'bg-messagebg border border-gray-700 text-white'
-                        : 'bg-messagebg border border-gray-700 text-white'
-                    }`}
-                  >
-                    {message.isUser ? (
-                      message.text
-                    ) : (
-                      <ReactMarkdown
-                        components={{
-                          p: ({ children }) => <p className="prose prose-sm max-w-none text-gray-100">{children}</p>
-                        }}
-                      >
-                        {message.text}
-                      </ReactMarkdown>
-                    )}
+            <div className="space-y-6 p-4">
+              {messages.map((message, index) => (
+                <div key={index} className="space-y-4">
+                  <div className={`flex ${message.isUser ? 'bg-chatbg' : 'bg-messagebg'}`}>
+                    <div className="max-w-3xl mx-auto w-full px-4 py-6">
+                      <div className="flex gap-4">
+                        <div className="w-8 h-8 rounded-sm bg-[#5436DA] flex items-center justify-center shrink-0">
+                          {message.isUser ? "U" : "A"}
+                        </div>
+                        <div className="flex-1 prose prose-invert max-w-none">
+                          {message.isUser ? (
+                            <p>{message.text}</p>
+                          ) : (
+                            <ReactMarkdown>
+                              {message.text}
+                            </ReactMarkdown>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  {!message.isUser && extractUrls(message.text).length > 0 && (
+                    <div className="max-w-3xl mx-auto px-4 grid gap-2">
+                      {extractUrls(message.text).map((url, urlIndex) => (
+                        <Card 
+                          key={urlIndex}
+                          className="p-4 hover:bg-messagebg transition-colors cursor-pointer bg-inputbg border-gray-700"
+                          onClick={() => window.open(url, '_blank')}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium text-gray-200 truncate flex-1">
+                              {getWorkflowName(message.text, url)}
+                            </span>
+                            <ExternalLink className="h-4 w-4 ml-2 text-gray-400" />
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+              {isLoading && (
+                <div className="bg-messagebg">
+                  <div className="max-w-3xl mx-auto px-4 py-6">
+                    <div className="flex gap-4">
+                      <div className="w-8 h-8 rounded-sm bg-[#5436DA] flex items-center justify-center shrink-0">
+                        A
+                      </div>
+                      <div className="flex gap-2 items-center text-gray-300">
+                        <Loader className="h-4 w-4 animate-spin" />
+                        Thinking...
+                      </div>
+                    </div>
                   </div>
                 </div>
-                {!message.isUser && extractUrls(message.text).length > 0 && (
-                  <div className="pl-4 grid gap-2">
-                    {extractUrls(message.text).map((url, urlIndex) => (
-                      <Card 
-                        key={urlIndex}
-                        className="p-4 hover:shadow-lg transition-shadow cursor-pointer bg-messagebg border-gray-700 hover:border-gray-500"
-                        onClick={() => window.open(url, '_blank')}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium text-gray-200 truncate flex-1">
-                            {getWorkflowName(message.text, url)}
-                          </span>
-                          <ExternalLink className="h-4 w-4 ml-2 text-gray-400" />
-                        </div>
-                      </Card>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))
-          )}
-          {isLoading && (
-            <div className="flex justify-start">
-              <div className="bg-messagebg border border-gray-700 text-white p-3 rounded-lg mr-4 flex items-center gap-2">
-                <Loader className="h-4 w-4 animate-spin" />
-                Thinking...
-              </div>
+              )}
             </div>
           )}
         </div>
         
-        <form onSubmit={handleSubmit} className="p-4 border-t border-gray-700 bg-messagebg flex gap-2">
-          <Input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Type your message..."
-            disabled={isLoading}
-            className="flex-1 bg-chatbg border-gray-700 text-white placeholder:text-gray-400"
-          />
-          <Button 
-            type="submit" 
-            disabled={isLoading || !input.trim()}
-            size="icon"
-            className="bg-gray-700 hover:bg-gray-600 text-white"
-          >
-            <Send className="h-4 w-4" />
-          </Button>
-        </form>
+        <div className="p-4 border-t border-gray-700">
+          <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
+            <div className="relative flex items-center">
+              <Input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Message AI Workflow Assistant..."
+                disabled={isLoading}
+                className="w-full bg-inputbg border-0 focus-visible:ring-0 text-white placeholder:text-gray-400 py-6"
+              />
+              <Button 
+                type="submit" 
+                disabled={isLoading || !input.trim()}
+                size="icon"
+                className="absolute right-2 bg-transparent hover:bg-messagebg text-gray-400 hover:text-white"
+              >
+                <Send className="h-4 w-4" />
+              </Button>
+            </div>
+          </form>
+          <div className="mt-2 text-center text-xs text-gray-500">
+            AI Workflow Assistant can make mistakes. Check important info.
+          </div>
+        </div>
       </div>
     </div>
   );
