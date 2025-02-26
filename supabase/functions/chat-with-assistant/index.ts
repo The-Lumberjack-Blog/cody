@@ -14,7 +14,6 @@ const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 serve(async (req) => {
-  // Handle CORS
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -23,137 +22,57 @@ serve(async (req) => {
     console.log('Initializing OpenAI client...');
     const openai = new OpenAI({
       apiKey: Deno.env.get('OPENAI_API_KEY')!,
-      defaultHeaders: {
-        'OpenAI-Beta': 'assistants=v2'
-      }
     });
 
     const { userInput, threadId } = await req.json();
     console.log('Received request:', { userInput, threadId });
 
-    // Create a new thread if none exists
-    let thread;
-    try {
-      if (!threadId) {
-        thread = await openai.beta.threads.create();
-        console.log('Created new thread:', thread.id);
-      } else {
-        thread = { id: threadId };
-        console.log('Using existing thread:', thread.id);
-      }
-    } catch (error) {
-      console.error('Error with thread creation/retrieval:', error);
-      throw error;
-    }
+    // Fetch previous messages for this thread
+    let previousMessages = [];
+    if (threadId) {
+      const { data: chatHistory, error: historyError } = await supabase
+        .from('chat_sessions')
+        .select('user_input, assistant_response')
+        .eq('thread_id', threadId)
+        .order('created_at', { ascending: true });
 
-    // Get the assistant configuration from the database
-    const { data: assistantConfig, error: configError } = await supabase
-      .from('assistant_config')
-      .select('*')
-      .limit(1)
-      .maybeSingle();
-
-    if (configError) {
-      console.error('Error fetching assistant config:', configError);
-      throw new Error(`Error fetching assistant config: ${configError.message}`);
-    }
-
-    let assistantId;
-    try {
-      if (!assistantConfig) {
-        // Create a new assistant if none exists
-        console.log('Creating new assistant...');
-        const assistant = await openai.beta.assistants.create({
-          name: "Workflow Guide",
-          instructions: `You are a helpful assistant that uses Socratic questioning to understand the user's needs and then suggests relevant workflows from a database. Ask 3-4 clarifying questions to better understand the user's needs before making any suggestions. Once you have a clear understanding, provide 2-3 relevant workflow suggestions. Analyze workflow descriptions and titles to provide relevant suggestions. Always maintain a friendly and helpful tone.`,
-          model: "gpt-4-turbo-preview",
-        });
-
-        // Save the assistant configuration
-        const { error: insertError } = await supabase
-          .from('assistant_config')
-          .insert({
-            assistant_id: assistant.id,
-            name: assistant.name,
-            instructions: assistant.instructions,
-          });
-
-        if (insertError) {
-          console.error('Error saving assistant config:', insertError);
-          throw new Error(`Error saving assistant config: ${insertError.message}`);
-        }
-
-        assistantId = assistant.id;
-      } else {
-        assistantId = assistantConfig.assistant_id;
-      }
-    } catch (error) {
-      console.error('Error with assistant creation/retrieval:', error);
-      throw error;
-    }
-
-    // Add the user's message to the thread
-    try {
-      await openai.beta.threads.messages.create(thread.id, {
-        role: "user",
-        content: userInput,
-      });
-    } catch (error) {
-      console.error('Error adding message to thread:', error);
-      throw error;
-    }
-
-    // Run the assistant
-    let run;
-    try {
-      run = await openai.beta.threads.runs.create(thread.id, {
-        assistant_id: assistantId,
-      });
-    } catch (error) {
-      console.error('Error creating run:', error);
-      throw error;
-    }
-
-    // Wait for the run to complete
-    let runStatus;
-    try {
-      runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
-      while (runStatus.status === "queued" || runStatus.status === "in_progress") {
-        console.log('Waiting for assistant response...', runStatus.status);
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
+      if (historyError) {
+        console.error('Error fetching chat history:', historyError);
+        throw historyError;
       }
 
-      if (runStatus.status === "failed") {
-        console.error('Assistant run failed:', runStatus.last_error);
-        throw new Error(`Assistant run failed: ${runStatus.last_error?.message || "Unknown error"}`);
-      }
-
-      if (runStatus.status === "requires_action") {
-        console.error('Assistant requires action:', runStatus);
-        throw new Error('Assistant requires action - not implemented');
-      }
-
-      if (runStatus.status !== "completed") {
-        console.error('Unexpected run status:', runStatus);
-        throw new Error(`Unexpected run status: ${runStatus.status}`);
-      }
-
-      console.log('Run completed with status:', runStatus.status);
-    } catch (error) {
-      console.error('Error during run execution:', error);
-      throw error;
+      previousMessages = chatHistory.flatMap(msg => [
+        { role: 'user', content: msg.user_input },
+        { role: 'assistant', content: msg.assistant_response }
+      ]);
     }
 
-    // Get the assistant's response
-    let lastMessage;
-    try {
-      const messages = await openai.beta.threads.messages.list(thread.id);
-      lastMessage = messages.data[0];
-    } catch (error) {
-      console.error('Error retrieving messages:', error);
-      throw error;
-    }
+    // System message to define assistant behavior
+    const systemMessage = {
+      role: 'system',
+      content: `You are a helpful assistant that uses Socratic questioning to understand the user's needs and then suggests relevant workflows from a database. Ask 3-4 clarifying questions to better understand the user's needs before making any suggestions. Once you have a clear understanding, provide 2-3 relevant workflow suggestions. Analyze workflow descriptions and titles to provide relevant suggestions. Always maintain a friendly and helpful tone.`
+    };
+
+    // Combine all messages
+    const messages = [
+      systemMessage,
+      ...previousMessages,
+      { role: 'user', content: userInput }
+    ];
+
+    // Get completion from OpenAI
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: messages,
+      temperature: 0.7,
+      max_tokens: 500,
+    });
+
+    const assistantResponse = completion.choices[0].message.content;
+    console.log('Assistant response:', assistantResponse);
+
+    // Generate a new thread ID if one doesn't exist
+    const newThreadId = threadId || crypto.randomUUID();
 
     // Save the interaction in the database
     try {
@@ -161,9 +80,8 @@ serve(async (req) => {
         .from('chat_sessions')
         .insert({
           user_input: userInput,
-          assistant_response: lastMessage.content[0].text.value,
-          assistant_id: assistantId,
-          thread_id: thread.id,
+          assistant_response: assistantResponse,
+          thread_id: newThreadId,
         });
 
       if (chatError) {
@@ -172,12 +90,11 @@ serve(async (req) => {
       }
     } catch (error) {
       console.error('Error saving chat session:', error);
-      // Don't throw here, as we still want to return the response to the user
     }
 
     return new Response(JSON.stringify({
-      response: lastMessage.content[0].text.value,
-      threadId: thread.id,
+      response: assistantResponse,
+      threadId: newThreadId,
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
