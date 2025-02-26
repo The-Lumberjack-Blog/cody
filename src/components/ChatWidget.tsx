@@ -84,7 +84,11 @@ export function ChatWidget() {
                   {message.isUser ? (
                     message.text
                   ) : (
-                    <ReactMarkdown className="prose prose-sm max-w-none">
+                    <ReactMarkdown
+                      components={{
+                        p: ({ children }) => <p className="prose prose-sm max-w-none">{children}</p>
+                      }}
+                    >
                       {message.text}
                     </ReactMarkdown>
                   )}
@@ -122,4 +126,3 @@ export function ChatWidget() {
     </div>
   );
 }
-
