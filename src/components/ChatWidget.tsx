@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,32 +25,56 @@ export function ChatWidget() {
   const { toast } = useToast();
 
   useEffect(() => {
-    checkFirstTimeVisitor();
+    checkSessionAndApiKey();
   }, []);
 
-  const checkFirstTimeVisitor = async () => {
+  const checkSessionAndApiKey = async () => {
     try {
+      // Get user's IP address
       const response = await fetch("https://api.ipify.org?format=json");
       const { ip } = await response.json();
 
-      const { data } = await supabase
+      // Check if user exists in cody table
+      const { data: existingUser } = await supabase
         .from("cody")
         .select("*")
         .eq("ip_address", ip)
         .single();
 
-      if (!data) {
-        setShowModal(true);
-      } else if (data.gemini_api_key) {
-        setUserApiKey(data.gemini_api_key);
+      if (!existingUser) {
+        // First time visitor - store initial session time
+        const { error } = await supabase
+          .from("cody")
+          .insert([{ ip_address: ip, email: `user_${Date.now()}@placeholder.com` }]);
+
+        if (error) throw error;
+        
+        // Don't show modal immediately for new users
+        return;
+      }
+
+      // Calculate time elapsed since first session
+      const firstSessionTime = new Date(existingUser.created_at).getTime();
+      const currentTime = new Date().getTime();
+      const threeMinutesInMs = 3 * 60 * 1000;
+      const hasThreeMinutesPassed = (currentTime - firstSessionTime) >= threeMinutesInMs;
+
+      if (hasThreeMinutesPassed) {
+        if (existingUser.gemini_api_key) {
+          // User has provided their API key - use it
+          setUserApiKey(existingUser.gemini_api_key);
+        } else {
+          // No API key found and 3 minutes have passed - show modal
+          setShowModal(true);
+        }
       }
     } catch (error) {
-      console.error("Error checking first time visitor:", error);
+      console.error("Error checking session and API key:", error);
     }
   };
 
   const handleApiKeySubmit = async () => {
-    await checkFirstTimeVisitor();
+    await checkSessionAndApiKey();
     setShowModal(false);
   };
 
