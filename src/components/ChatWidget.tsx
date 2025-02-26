@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -86,10 +87,12 @@ export function ChatWidget() {
   };
 
   const handleQuickSearch = (searchTerm: string) => {
+    if (isLoading) return;
     setInput(searchTerm);
-    setTimeout(() => {
+    // Using requestAnimationFrame to ensure the input is updated before submitting
+    requestAnimationFrame(() => {
       handleSubmit();
-    }, 100);
+    });
   };
 
   const renderInputField = () => (
