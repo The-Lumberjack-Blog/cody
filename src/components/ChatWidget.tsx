@@ -21,9 +21,9 @@ export function ChatWidget() {
   const { toast } = useToast();
 
   const extractUrls = (text: string) => {
-    const urlRegex = /https:\/\/n8n\.io\/workflow\/[^\s\n)]+/g;
+    const urlRegex = /https:\/\/n8n\.io\/[^\s\n)]+/g;
     const urls = text.match(urlRegex) || [];
-    console.log('Extracted URLs:', urls); // Debug log
+    console.log('Extracted URLs:', urls);
     return urls;
   };
 
@@ -50,7 +50,7 @@ export function ChatWidget() {
         throw new Error('Invalid response from assistant');
       }
 
-      console.log('Assistant response:', data.response); // Debug log
+      console.log('Assistant response:', data.response);
       
       setThreadId(data.threadId);
       setMessages(prev => [...prev, { text: data.response, isUser: false }]);
@@ -107,7 +107,7 @@ export function ChatWidget() {
                 {!message.isUser && extractUrls(message.text).length > 0 && (
                   <div className="pl-4 grid gap-2">
                     {extractUrls(message.text).map((url, urlIndex) => {
-                      console.log('Rendering URL card:', url); // Debug log
+                      console.log('Rendering URL card:', url);
                       return (
                         <Card 
                           key={urlIndex}
