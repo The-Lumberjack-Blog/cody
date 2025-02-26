@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,19 +21,33 @@ export function ChatWidget() {
   const [consultingMode, setConsultingMode] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [userApiKey, setUserApiKey] = useState<string | null>(null);
+  const [workflowCount, setWorkflowCount] = useState<number>(0);
   const { toast } = useToast();
 
   useEffect(() => {
     checkSessionAndApiKey();
+    fetchWorkflowCount();
   }, []);
+
+  const fetchWorkflowCount = async () => {
+    try {
+      const { count, error } = await supabase
+        .from('workflow')
+        .select('id', { count: 'exact' });
+      
+      if (error) throw error;
+      
+      setWorkflowCount(count || 0);
+    } catch (error) {
+      console.error('Error fetching workflow count:', error);
+    }
+  };
 
   const checkSessionAndApiKey = async () => {
     try {
-      // Get user's IP address
       const response = await fetch("https://api.ipify.org?format=json");
       const { ip } = await response.json();
 
-      // Check if user exists in cody table
       const { data: existingUser } = await supabase
         .from("cody")
         .select("*")
@@ -42,18 +55,15 @@ export function ChatWidget() {
         .single();
 
       if (!existingUser) {
-        // First time visitor - store initial session time
         const { error } = await supabase
           .from("cody")
           .insert([{ ip_address: ip, email: `user_${Date.now()}@placeholder.com` }]);
 
         if (error) throw error;
         
-        // Don't show modal immediately for new users
         return;
       }
 
-      // Calculate time elapsed since first session
       const firstSessionTime = new Date(existingUser.created_at).getTime();
       const currentTime = new Date().getTime();
       const threeMinutesInMs = 3 * 60 * 1000;
@@ -61,10 +71,8 @@ export function ChatWidget() {
 
       if (hasThreeMinutesPassed) {
         if (existingUser.gemini_api_key) {
-          // User has provided their API key - use it
           setUserApiKey(existingUser.gemini_api_key);
         } else {
-          // No API key found and 3 minutes have passed - show modal
           setShowModal(true);
         }
       }
@@ -284,6 +292,10 @@ export function ChatWidget() {
             </div>
           </div>
         )}
+
+        <div className="fixed bottom-[50px] left-0 right-0 text-center text-gray-400 text-sm">
+          Cody knows {workflowCount} n8n workflows, all from n8n template marketplace.
+        </div>
       </div>
 
       <CodyModal
