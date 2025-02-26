@@ -22,6 +22,10 @@ serve(async (req) => {
   try {
     const openai = new OpenAI({
       apiKey: Deno.env.get('OPENAI_API_KEY')!,
+      baseURL: "https://oai.hconeai.com/v1",
+      defaultHeaders: {
+        'OpenAI-Beta': 'assistants=v2'
+      }
     });
 
     const { userInput, threadId } = await req.json();
@@ -42,19 +46,20 @@ serve(async (req) => {
       .from('assistant_config')
       .select('*')
       .limit(1)
-      .single();
+      .maybeSingle();
 
     if (configError) {
       throw new Error(`Error fetching assistant config: ${configError.message}`);
     }
 
+    let assistantId;
     if (!assistantConfig) {
       // Create a new assistant if none exists
       console.log('Creating new assistant...');
       const assistant = await openai.beta.assistants.create({
         name: "Workflow Guide",
         instructions: `You are a helpful assistant that uses Socratic questioning to understand the user's needs and then suggests relevant workflows from a database. Analyze workflow descriptions and titles to provide relevant suggestions. Always maintain a friendly and helpful tone. Ask clarifying questions to better understand the user's needs before making suggestions.`,
-        model: "gpt-4-1106-preview",
+        model: "gpt-4o-mini",
       });
 
       // Save the assistant configuration
@@ -70,7 +75,9 @@ serve(async (req) => {
         throw new Error(`Error saving assistant config: ${insertError.message}`);
       }
 
-      assistantConfig = { assistant_id: assistant.id };
+      assistantId = assistant.id;
+    } else {
+      assistantId = assistantConfig.assistant_id;
     }
 
     // Add the user's message to the thread
@@ -81,7 +88,7 @@ serve(async (req) => {
 
     // Run the assistant
     const run = await openai.beta.threads.runs.create(thread.id, {
-      assistant_id: assistantConfig.assistant_id,
+      assistant_id: assistantId,
     });
 
     // Wait for the run to complete
@@ -90,6 +97,10 @@ serve(async (req) => {
       console.log('Waiting for assistant response...');
       await new Promise(resolve => setTimeout(resolve, 1000));
       runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
+    }
+
+    if (runStatus.status === "failed") {
+      throw new Error(`Assistant run failed: ${runStatus.last_error?.message || "Unknown error"}`);
     }
 
     // Get the assistant's response
@@ -102,12 +113,13 @@ serve(async (req) => {
       .insert({
         user_input: userInput,
         assistant_response: lastMessage.content[0].text.value,
-        assistant_id: assistantConfig.assistant_id,
+        assistant_id: assistantId,
         thread_id: thread.id,
       });
 
     if (chatError) {
-      throw new Error(`Error saving chat session: ${chatError.message}`);
+      console.error('Error saving chat session:', chatError);
+      // Don't throw here, as we still want to return the response to the user
     }
 
     return new Response(JSON.stringify({

@@ -29,22 +29,26 @@ export function ChatWidget() {
     setIsLoading(true);
 
     try {
-      const response = await supabase.functions.invoke('chat-with-assistant', {
+      const { data, error } = await supabase.functions.invoke('chat-with-assistant', {
         body: { userInput: userMessage, threadId }
       });
 
-      if (response.error) {
-        throw new Error(response.error.message);
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw error;
       }
 
-      const data = response.data;
+      if (!data || !data.response) {
+        throw new Error('Invalid response from assistant');
+      }
+
       setThreadId(data.threadId);
       setMessages(prev => [...prev, { text: data.response, isUser: false }]);
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Chat error:', error);
       toast({
         title: "Error",
-        description: "Failed to send message. Please try again.",
+        description: "Failed to get response from assistant. Please try again.",
         variant: "destructive",
       });
     } finally {
