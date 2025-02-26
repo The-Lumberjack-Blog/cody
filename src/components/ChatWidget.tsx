@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,7 +7,6 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from "react-markdown";
 import { Card } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch"
 
 interface ChatMessage {
   text: string;
@@ -49,10 +49,10 @@ export function ChatWidget() {
     }
 
     const textToSubmit = searchTerm || input.trim();
-    console.log("Submitting text:", textToSubmit); // Debug log
+    console.log("Submitting text:", textToSubmit);
 
     if (!textToSubmit || isLoading) {
-      console.log("Early return - empty text or loading"); // Debug log
+      console.log("Early return - empty text or loading");
       return;
     }
 
@@ -104,42 +104,29 @@ export function ChatWidget() {
 
   const handleQuickSearch = (searchTerm: string) => {
     if (isLoading) return;
-    console.log("Quick search term:", searchTerm); // Debug log
-    setInput(searchTerm); // Update input field visually
-    handleSubmit(undefined, searchTerm); // Pass the search term directly to handleSubmit
+    console.log("Quick search term:", searchTerm);
+    setInput(searchTerm);
+    handleSubmit(undefined, searchTerm);
   };
 
   const renderInputField = () => (
-    <div className="space-y-2">
-      <form onSubmit={handleSubmit} className="relative flex items-center">
-        <Input
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          placeholder="Tell Cody what you want to automate..."
-          disabled={isLoading}
-          className="w-full bg-inputbg border-0 focus-visible:ring-0 text-white placeholder:text-gray-400 py-6"
-        />
-        <Button
-          type="submit"
-          disabled={isLoading || !input.trim()}
-          size="icon"
-          className="absolute right-2 bg-transparent hover:bg-messagebg text-gray-400 hover:text-white"
-        >
-          <Send className="h-4 w-4" />
-        </Button>
-      </form>
-      <div className="flex items-center gap-2 px-2">
-        <Switch
-          id="consulting-mode"
-          checked={consultingMode}
-          onCheckedChange={setConsultingMode}
-          className="data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-[#888888]"
-        />
-        <label htmlFor="consulting-mode" className="text-sm text-gray-300">
-          Consulting Mode
-        </label>
-      </div>
-    </div>
+    <form onSubmit={handleSubmit} className="relative flex items-center">
+      <Input
+        value={input}
+        onChange={e => setInput(e.target.value)}
+        placeholder="Tell Cody what you want to automate..."
+        disabled={isLoading}
+        className="w-full bg-inputbg border-0 focus-visible:ring-0 text-white placeholder:text-gray-400 py-6"
+      />
+      <Button
+        type="submit"
+        disabled={isLoading || !input.trim()}
+        size="icon"
+        className="absolute right-2 bg-transparent hover:bg-messagebg text-gray-400 hover:text-white"
+      >
+        <Send className="h-4 w-4" />
+      </Button>
+    </form>
   );
 
   const searchTerms = [
@@ -161,6 +148,17 @@ export function ChatWidget() {
               <div className="w-full max-w-2xl">
                 <div className="mb-6">{renderInputField()}</div>
                 <div className="flex flex-wrap gap-2 justify-center">
+                  <Button
+                    onClick={() => setConsultingMode(!consultingMode)}
+                    className={`bg-opacity-75 text-sm px-4 py-2 rounded-full border border-gray-700 ${
+                      consultingMode 
+                        ? 'bg-green-500 text-white hover:bg-green-600' 
+                        : 'bg-gray-500 text-gray-200 hover:bg-gray-600'
+                    }`}
+                    variant="ghost"
+                  >
+                    Consulting Mode
+                  </Button>
                   {searchTerms.map((term, index) => (
                     <Button
                       key={index}
