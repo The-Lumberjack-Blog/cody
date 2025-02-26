@@ -203,9 +203,6 @@ export function ChatWidget() {
                     </Button>
                   ))}
                 </div>
-                <div className="mt-4 text-center text-xs text-gray-500">
-                  Cody can say dumb things sometimes. Oh and it doesn't store any of your data.
-                </div>
               </div>
             </div>
           ) : (
@@ -259,9 +256,6 @@ export function ChatWidget() {
           <div className="p-4 border-t border-gray-700">
             <div className="max-w-3xl mx-auto">
               {renderInputField()}
-              <div className="mt-2 text-center text-xs text-gray-500">
-                Cody can say dumb things sometimes. Oh and it doesn't store any of your data.
-              </div>
             </div>
           </div>
         )}
