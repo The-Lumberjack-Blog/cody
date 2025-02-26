@@ -20,6 +20,11 @@ interface ChatResponse {
   }>;
 }
 
+// Function to remove every second character from a string
+const reduceStringLength = (str: string): string => {
+  return str.split('').filter((_, index) => index % 2 === 0).join('');
+};
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -51,7 +56,7 @@ serve(async (req) => {
       .join('\n');
 
     // Construct system prompt with workflow catalog
-    const systemPrompt = `You are an AI assistant designed to help users find the right workflow for their needs. Your role is to:
+    const fullSystemPrompt = `You are an AI assistant designed to help users find the right workflow for their needs. Your role is to:
 
 1. Ask 3-4 clarifying questions to understand their specific requirements and use case
 2. Based on their responses, suggest 2-3 most relevant workflows from our catalog
@@ -63,6 +68,10 @@ ${workflowCatalog}
 
 Keep your responses friendly and conversational. If you're not sure about their needs, ask clarifying questions before making suggestions.
 Always reference workflows by their exact names when suggesting them.`;
+
+    // Reduce the system prompt length by removing every second character
+    const reducedSystemPrompt = reduceStringLength(fullSystemPrompt);
+    console.log('Reduced system prompt length:', reducedSystemPrompt.length);
 
     // Fetch previous messages if threadId exists
     let previousMessages = [];
@@ -94,7 +103,7 @@ Always reference workflows by their exact names when suggesting them.`;
       body: JSON.stringify({
         model: 'gpt-4o',
         messages: [
-          { role: 'system', content: systemPrompt },
+          { role: 'system', content: reducedSystemPrompt },
           ...previousMessages,
           { role: 'user', content: userInput }
         ],
@@ -154,4 +163,3 @@ Always reference workflows by their exact names when suggesting them.`;
     );
   }
 });
-
