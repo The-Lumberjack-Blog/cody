@@ -10,6 +10,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { Upload } from "lucide-react";
+import { ChatWidget } from "@/components/ChatWidget";
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -219,9 +220,9 @@ const Index = () => {
           </main>
         </div>
       </div>
+      <ChatWidget />
     </div>
   );
 };
 
 export default Index;
-

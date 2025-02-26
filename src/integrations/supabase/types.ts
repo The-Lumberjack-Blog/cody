@@ -27,6 +27,57 @@ export type Database = {
         }
         Relationships: []
       }
+      assistant_config: {
+        Row: {
+          assistant_id: string
+          created_at: string
+          id: string
+          instructions: string
+          name: string
+        }
+        Insert: {
+          assistant_id: string
+          created_at?: string
+          id?: string
+          instructions: string
+          name: string
+        }
+        Update: {
+          assistant_id?: string
+          created_at?: string
+          id?: string
+          instructions?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      chat_sessions: {
+        Row: {
+          assistant_id: string | null
+          assistant_response: string | null
+          created_at: string
+          id: string
+          thread_id: string | null
+          user_input: string | null
+        }
+        Insert: {
+          assistant_id?: string | null
+          assistant_response?: string | null
+          created_at?: string
+          id?: string
+          thread_id?: string | null
+          user_input?: string | null
+        }
+        Update: {
+          assistant_id?: string | null
+          assistant_response?: string | null
+          created_at?: string
+          id?: string
+          thread_id?: string | null
+          user_input?: string | null
+        }
+        Relationships: []
+      }
       credit_transactions: {
         Row: {
           amount: number
