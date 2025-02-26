@@ -22,7 +22,9 @@ export function ChatWidget() {
 
   const extractUrls = (text: string) => {
     const urlRegex = /https:\/\/n8n\.io\/workflow\/[^\s\n)]+/g;
-    return text.match(urlRegex) || [];
+    const urls = text.match(urlRegex) || [];
+    console.log('Extracted URLs:', urls); // Debug log
+    return urls;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -48,6 +50,8 @@ export function ChatWidget() {
         throw new Error('Invalid response from assistant');
       }
 
+      console.log('Assistant response:', data.response); // Debug log
+      
       setThreadId(data.threadId);
       setMessages(prev => [...prev, { text: data.response, isUser: false }]);
     } catch (error) {
@@ -102,20 +106,23 @@ export function ChatWidget() {
                 </div>
                 {!message.isUser && extractUrls(message.text).length > 0 && (
                   <div className="pl-4 grid gap-2">
-                    {extractUrls(message.text).map((url, urlIndex) => (
-                      <Card 
-                        key={urlIndex}
-                        className="p-4 hover:shadow-lg transition-shadow cursor-pointer border border-gray-200 hover:border-black"
-                        onClick={() => window.open(url, '_blank')}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium text-gray-800 truncate flex-1">
-                            {url}
-                          </span>
-                          <ExternalLink className="h-4 w-4 ml-2 text-gray-500" />
-                        </div>
-                      </Card>
-                    ))}
+                    {extractUrls(message.text).map((url, urlIndex) => {
+                      console.log('Rendering URL card:', url); // Debug log
+                      return (
+                        <Card 
+                          key={urlIndex}
+                          className="p-4 hover:shadow-lg transition-shadow cursor-pointer border border-gray-200 hover:border-black"
+                          onClick={() => window.open(url, '_blank')}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium text-gray-800 truncate flex-1">
+                              {url}
+                            </span>
+                            <ExternalLink className="h-4 w-4 ml-2 text-gray-500" />
+                          </div>
+                        </Card>
+                      );
+                    })}
                   </div>
                 )}
               </div>
