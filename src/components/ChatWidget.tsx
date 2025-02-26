@@ -118,7 +118,7 @@ export function ChatWidget() {
       <div className="flex flex-col h-full max-w-3xl mx-auto">
         <div className="flex-1 overflow-y-auto">
           {messages.length === 0 ? <div className="h-full flex flex-col items-center justify-center px-4">
-              <h1 className="text-4xl font-semibold mb-8 text-gray-200">Hey I'm Cody. What should we automate?</h1>
+              <h1 className="text-4xl font-semibold mb-8 text-gray-200">Hey I'm Cody.</h1>
               <div className="w-full max-w-2xl">
                 <div className="mb-6">
                   {renderInputField()}
