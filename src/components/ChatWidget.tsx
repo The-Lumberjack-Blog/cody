@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from "react-markdown";
 import { Card } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch"
 
 interface ChatMessage {
   text: string;
@@ -17,6 +19,7 @@ export function ChatWidget() {
   const [input, setInput] = useState("");
   const [threadId, setThreadId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [consultingMode, setConsultingMode] = useState(false);
   const { toast } = useToast();
 
   const extractUrls = (text: string) => {
@@ -69,7 +72,8 @@ export function ChatWidget() {
       const { data, error } = await supabase.functions.invoke('chat-with-assistant', {
         body: {
           userInput: textToSubmit,
-          threadId
+          threadId,
+          consultingMode
         }
       });
 
@@ -136,6 +140,19 @@ export function ChatWidget() {
   return (
     <div className="fixed inset-0 bg-chatbg text-gray-100">
       <div className="flex flex-col h-full max-w-3xl mx-auto">
+        <div className="flex items-center justify-center p-4 border-b border-gray-700">
+          <div className="flex items-center gap-2">
+            <Switch
+              id="consulting-mode"
+              checked={consultingMode}
+              onCheckedChange={setConsultingMode}
+            />
+            <label htmlFor="consulting-mode" className="text-sm text-gray-300">
+              Consulting Mode
+            </label>
+          </div>
+        </div>
+
         <div className="flex-1 overflow-y-auto">
           {messages.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center px-4">
@@ -221,3 +238,4 @@ export function ChatWidget() {
     </div>
   );
 }
+

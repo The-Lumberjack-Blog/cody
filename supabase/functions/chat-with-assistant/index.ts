@@ -15,7 +15,7 @@ serve(async (req) => {
   }
 
   try {
-    const { userInput, threadId } = await req.json();
+    const { userInput, threadId, consultingMode } = await req.json();
     
     // Initialize Supabase client
     const supabaseClient = createClient(
@@ -39,7 +39,7 @@ serve(async (req) => {
       .join('\n');
 
     // Construct system prompt with workflow catalog
-    const systemPrompt = `You are an AI assistant designed to help users find the right workflow for their needs. Your role is to:
+    let systemPrompt = `You are an AI assistant designed to help users find the right workflow for their needs. Your role is to:
 
 1. Suggest 2-3 most relevant workflows from our catalog
 2. Explain why each suggested workflow would be beneficial for their needs
@@ -52,6 +52,13 @@ ${workflowCatalog}
 
 Keep your responses friendly and conversational.
 Always reference workflows by their exact names when suggesting them.`;
+
+    // Add consulting mode instructions if enabled
+    if (consultingMode) {
+      systemPrompt += `
+
+The user has turned on Consulting Mode. This means they want your help figuring out what they actually need. Ask them a few follow up questions as if you were an automation consultant and based on the responses, after 2-3 follow up questions give them the actual suggestions. When you're asking questions, you're FORBIDDEN from sending actual suggestions. You either ask a question or you provide suggestions.`;
+    }
 
     // Fetch previous messages if threadId exists
     let previousMessages = [];
