@@ -23,6 +23,7 @@ export function CodyModal({ open, onOpenChange, onApiKeySubmit }: CodyModalProps
   const [email, setEmail] = useState("");
   const [apiKey, setApiKey] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showApiKeyInput, setShowApiKeyInput] = useState(false);
   const { toast } = useToast();
 
   const handleWaitlistSubmit = async () => {
@@ -44,6 +45,7 @@ export function CodyModal({ open, onOpenChange, onApiKeySubmit }: CodyModalProps
       const { error } = await supabase.from("cody").insert({
         email,
         ip_address: ip,
+        paid: true
       });
 
       if (error) throw error;
@@ -83,8 +85,9 @@ export function CodyModal({ open, onOpenChange, onApiKeySubmit }: CodyModalProps
 
       const { error } = await supabase.from("cody").insert({
         ip_address: ip,
+        email: `user_${Date.now()}@placeholder.com`, // Adding a placeholder email since it's required
         apikey: true,
-        gemini_api_key: apiKey,
+        gemini_api_key: apiKey
       });
 
       if (error) throw error;
@@ -118,32 +121,43 @@ export function CodyModal({ open, onOpenChange, onApiKeySubmit }: CodyModalProps
         </DialogHeader>
         <div className="space-y-6">
           <div className="space-y-4">
-            <Input
-              type="password"
-              placeholder="Enter your Gemini API key"
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              className="bg-inputbg border-gray-700 text-white"
-              disabled={isSubmitting}
-            />
-            <div className="flex items-center gap-2 text-sm text-gray-400">
-              <ExternalLink className="h-4 w-4" />
-              <a
-                href="https://ai.google.dev/gemini-api/docs/api-key"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-white"
-              >
-                How can I get an API key?
-              </a>
-            </div>
             <Button
-              onClick={handleApiKeySubmit}
+              onClick={() => setShowApiKeyInput(true)}
               className="w-full bg-blue-600 hover:bg-blue-700"
               disabled={isSubmitting}
             >
               Use Your Own API Key
             </Button>
+            {showApiKeyInput && (
+              <>
+                <Input
+                  type="password"
+                  placeholder="Enter your Gemini API key"
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                  className="bg-inputbg border-gray-700 text-white"
+                  disabled={isSubmitting}
+                />
+                <div className="flex items-center gap-2 text-sm text-gray-400">
+                  <ExternalLink className="h-4 w-4" />
+                  <a
+                    href="https://ai.google.dev/gemini-api/docs/api-key"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-white"
+                  >
+                    How can I get an API key?
+                  </a>
+                </div>
+                <Button
+                  onClick={handleApiKeySubmit}
+                  className="w-full bg-blue-600 hover:bg-blue-700"
+                  disabled={isSubmitting}
+                >
+                  Submit API Key
+                </Button>
+              </>
+            )}
           </div>
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
