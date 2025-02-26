@@ -51,7 +51,7 @@ Here is our complete catalog of available workflows:
 ${workflowCatalog}
 
 Keep your responses friendly and conversational.
-Always reference workflows by their exact names when suggesting them and ALWAYS add the URL too.`;
+Always reference workflows by their exact names when suggesting them.`;
 
     // Fetch previous messages if threadId exists
     let previousMessages = [];
