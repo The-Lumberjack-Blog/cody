@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,8 +46,10 @@ export function ChatWidget() {
       .join(' ');
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) {
+      e.preventDefault();
+    }
     if (!input.trim() || isLoading) return;
 
     const userMessage = input.trim();
@@ -84,6 +85,13 @@ export function ChatWidget() {
     }
   };
 
+  const handleQuickSearch = (searchTerm: string) => {
+    setInput(searchTerm);
+    setTimeout(() => {
+      handleSubmit();
+    }, 100);
+  };
+
   const renderInputField = () => (
     <form onSubmit={handleSubmit} className="relative flex items-center">
       <Input
@@ -105,12 +113,10 @@ export function ChatWidget() {
   );
 
   const searchTerms = [
-    { text: "AI agent for tracking financials", color: "#F97316" },
-    { text: "Personal Assistant Agent", color: "#8B5CF6" },
-    { text: "Content Writer AI", color: "#0EA5E9" },
-    { text: "Database Search", color: "#9b87f5" },
-    { text: "Viral Reels", color: "#D946EF" },
-    { text: "Email Assistant", color: "#33C3F0" },
+    { text: "Financial Agent", icon: "💰", color: "#F97316" },
+    { text: "Content Writer", icon: "📝", color: "#0EA5E9" },
+    { text: "Viral Reels", icon: "📱", color: "#D946EF" },
+    { text: "Email Agent", icon: "📧", color: "#33C3F0" },
   ];
 
   return (
@@ -126,35 +132,18 @@ export function ChatWidget() {
                 <div className="mb-6">
                   {renderInputField()}
                 </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <button className="text-left p-4 bg-inputbg hover:bg-messagebg rounded-lg transition-colors group">
-                    <span className="block text-sm font-medium mb-2">Solve</span>
-                    <div className="space-y-1">
-                      {searchTerms.slice(0, 3).map((term, index) => (
-                        <span 
-                          key={index} 
-                          className="block text-xs"
-                          style={{ color: term.color }}
-                        >
-                          {term.text}
-                        </span>
-                      ))}
-                    </div>
-                  </button>
-                  <button className="text-left p-4 bg-inputbg hover:bg-messagebg rounded-lg transition-colors">
-                    <span className="block text-sm font-medium mb-2">Deep research</span>
-                    <div className="space-y-1">
-                      {searchTerms.slice(3).map((term, index) => (
-                        <span 
-                          key={index} 
-                          className="block text-xs"
-                          style={{ color: term.color }}
-                        >
-                          {term.text}
-                        </span>
-                      ))}
-                    </div>
-                  </button>
+                <div className="flex flex-wrap gap-2 justify-center">
+                  {searchTerms.map((term, index) => (
+                    <Button
+                      key={index}
+                      onClick={() => handleQuickSearch(term.text)}
+                      className="bg-inputbg hover:bg-messagebg text-sm px-4 py-2 rounded-full border border-gray-700"
+                      variant="ghost"
+                    >
+                      <span className="mr-2">{term.icon}</span>
+                      <span style={{ color: term.color }}>{term.text}</span>
+                    </Button>
+                  ))}
                 </div>
               </div>
             </div>
