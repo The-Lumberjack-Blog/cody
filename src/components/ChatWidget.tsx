@@ -2,10 +2,11 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Send, Loader } from "lucide-react";
+import { Send, Loader, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from "react-markdown";
+import { Card } from "@/components/ui/card";
 
 interface ChatMessage {
   text: string;
@@ -18,6 +19,11 @@ export function ChatWidget() {
   const [threadId, setThreadId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+
+  const extractUrls = (text: string) => {
+    const urlRegex = /https:\/\/n8n\.io\/workflow\/[^\s\n)]+/g;
+    return text.match(urlRegex) || [];
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,29 +76,48 @@ export function ChatWidget() {
             </div>
           ) : (
             messages.map((message, index) => (
-              <div
-                key={index}
-                className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
-              >
+              <div key={index} className="space-y-4">
                 <div
-                  className={`max-w-[80%] p-3 rounded-lg ${
-                    message.isUser
-                      ? 'bg-black text-white ml-4'
-                      : 'bg-gray-100 text-black mr-4'
-                  }`}
+                  className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
                 >
-                  {message.isUser ? (
-                    message.text
-                  ) : (
-                    <ReactMarkdown
-                      components={{
-                        p: ({ children }) => <p className="prose prose-sm max-w-none">{children}</p>
-                      }}
-                    >
-                      {message.text}
-                    </ReactMarkdown>
-                  )}
+                  <div
+                    className={`max-w-[80%] p-3 rounded-lg ${
+                      message.isUser
+                        ? 'bg-black text-white ml-4'
+                        : 'bg-gray-100 text-black mr-4'
+                    }`}
+                  >
+                    {message.isUser ? (
+                      message.text
+                    ) : (
+                      <ReactMarkdown
+                        components={{
+                          p: ({ children }) => <p className="prose prose-sm max-w-none">{children}</p>
+                        }}
+                      >
+                        {message.text}
+                      </ReactMarkdown>
+                    )}
+                  </div>
                 </div>
+                {!message.isUser && extractUrls(message.text).length > 0 && (
+                  <div className="pl-4 grid gap-2">
+                    {extractUrls(message.text).map((url, urlIndex) => (
+                      <Card 
+                        key={urlIndex}
+                        className="p-4 hover:shadow-lg transition-shadow cursor-pointer border border-gray-200 hover:border-black"
+                        onClick={() => window.open(url, '_blank')}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-gray-800 truncate flex-1">
+                            {url}
+                          </span>
+                          <ExternalLink className="h-4 w-4 ml-2 text-gray-500" />
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                )}
               </div>
             ))
           )}
