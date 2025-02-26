@@ -50,8 +50,8 @@ Here is our complete catalog of available workflows:
 
 ${workflowCatalog}
 
-Keep your responses friendly and conversational. If you're not sure about their needs, ask clarifying questions before making suggestions.
-Always reference workflows by their exact names when suggesting them.`;
+Keep your responses friendly and conversational.
+Always reference workflows by their exact names when suggesting them and ALWAYS add the URL too.`;
 
     // Fetch previous messages if threadId exists
     let previousMessages = [];
