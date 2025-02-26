@@ -35,7 +35,7 @@ serve(async (req) => {
 
     // Create workflow catalog string
     const workflowCatalog = workflows
-      ?.map(w => `Workflow Name: ${w.workflow_name}\nDescription: ${w.workflow_description}\n---`)
+      ?.map(w => `Workflow Name: ${w.workflow_name}\nDescription: ${w.workflow_description}\nURL: ${w.workflow_url}\n---`)
       .join('\n');
 
     // Construct system prompt with workflow catalog
@@ -43,6 +43,8 @@ serve(async (req) => {
 
 1. Suggest 2-3 most relevant workflows from our catalog
 2. Explain why each suggested workflow would be beneficial for their needs
+3. ALWAYS include the direct URL that belongs to the workflow.
+4. NEVER ask anything. assume the user's request is complete and search based on that.
 
 Here is our complete catalog of available workflows:
 
