@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Send, Loader, ExternalLink } from "lucide-react";
@@ -7,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from "react-markdown";
 import { Card } from "@/components/ui/card";
+import { CodyModal } from "./CodyModal";
 
 interface ChatMessage {
   text: string;
@@ -19,7 +19,39 @@ export function ChatWidget() {
   const [threadId, setThreadId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [consultingMode, setConsultingMode] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const { toast } = useToast();
+
+  useEffect(() => {
+    checkFirstTimeVisitor();
+  }, []);
+
+  const checkFirstTimeVisitor = async () => {
+    try {
+      const response = await fetch("https://api.ipify.org?format=json");
+      const { ip } = await response.json();
+
+      const { data } = await supabase
+        .from("cody")
+        .select("*")
+        .eq("ip_address", ip)
+        .single();
+
+      if (!data) {
+        setShowModal(true);
+      }
+    } catch (error) {
+      console.error("Error checking first time visitor:", error);
+    }
+  };
+
+  const handleApiKeySubmit = () => {
+    toast({
+      title: "Coming Soon",
+      description: "API key support will be available soon!",
+    });
+    setShowModal(false);
+  };
 
   const extractUrls = (text: string) => {
     const urlRegex = /https:\/\/n8n\.io\/[^\s\n)]+/g;
@@ -233,6 +265,12 @@ export function ChatWidget() {
           </div>
         )}
       </div>
+
+      <CodyModal
+        open={showModal}
+        onOpenChange={setShowModal}
+        onApiKeySubmit={handleApiKeySubmit}
+      />
     </div>
   );
 }

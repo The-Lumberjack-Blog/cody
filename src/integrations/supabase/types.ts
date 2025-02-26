@@ -78,6 +78,33 @@ export type Database = {
         }
         Relationships: []
       }
+      cody: {
+        Row: {
+          apikey: boolean
+          created_at: string
+          email: string
+          id: string
+          ip_address: string
+          paid: boolean
+        }
+        Insert: {
+          apikey?: boolean
+          created_at?: string
+          email: string
+          id?: string
+          ip_address: string
+          paid?: boolean
+        }
+        Update: {
+          apikey?: boolean
+          created_at?: string
+          email?: string
+          id?: string
+          ip_address?: string
+          paid?: boolean
+        }
+        Relationships: []
+      }
       credit_transactions: {
         Row: {
           amount: number
