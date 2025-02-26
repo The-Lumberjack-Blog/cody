@@ -8,23 +8,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-interface ChatResponse {
-  id: string;
-  choices: Array<{
-    index: number;
-    message: {
-      role: string;
-      content: string;
-    };
-    finish_reason: string;
-  }>;
-}
-
-// Function to remove every second character from a string
-const reduceStringLength = (str: string): string => {
-  return str.split('').filter((_, index) => index % 2 === 0).join('');
-};
-
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -56,7 +39,7 @@ serve(async (req) => {
       .join('\n');
 
     // Construct system prompt with workflow catalog
-    const fullSystemPrompt = `You are an AI assistant designed to help users find the right workflow for their needs. Your role is to:
+    const systemPrompt = `You are an AI assistant designed to help users find the right workflow for their needs. Your role is to:
 
 1. Ask 3-4 clarifying questions to understand their specific requirements and use case
 2. Based on their responses, suggest 2-3 most relevant workflows from our catalog
@@ -68,10 +51,6 @@ ${workflowCatalog}
 
 Keep your responses friendly and conversational. If you're not sure about their needs, ask clarifying questions before making suggestions.
 Always reference workflows by their exact names when suggesting them.`;
-
-    // Reduce the system prompt length by removing every second character
-    const reducedSystemPrompt = reduceStringLength(fullSystemPrompt);
-    console.log('Reduced system prompt length:', reducedSystemPrompt.length);
 
     // Fetch previous messages if threadId exists
     let previousMessages = [];
@@ -87,37 +66,51 @@ Always reference workflows by their exact names when suggesting them.`;
         throw historyError;
       }
 
-      previousMessages = chatHistory?.flatMap(msg => [
-        { role: 'user', content: msg.user_input },
-        { role: 'assistant', content: msg.assistant_response }
-      ]) ?? [];
+      previousMessages = chatHistory?.map(msg => ({
+        role: 'user',
+        parts: [{ text: msg.user_input }]
+      })).concat(chatHistory?.map(msg => ({
+        role: 'model',
+        parts: [{ text: msg.assistant_response }]
+      }))) ?? [];
     }
 
-    // Make request to OpenAI API directly
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    // Make request to Gemini API
+    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
         'Content-Type': 'application/json',
+        'x-goog-api-key': Deno.env.get('GEMINI_API_KEY') ?? '',
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
-        messages: [
-          { role: 'system', content: reducedSystemPrompt },
+        contents: [
+          {
+            role: 'user',
+            parts: [{ text: systemPrompt }]
+          },
           ...previousMessages,
-          { role: 'user', content: userInput }
+          {
+            role: 'user',
+            parts: [{ text: userInput }]
+          }
         ],
+        generationConfig: {
+          maxOutputTokens: 2048,
+          temperature: 0.7,
+          topP: 0.8,
+          topK: 40
+        },
       }),
     });
 
     if (!response.ok) {
       const error = await response.json();
-      console.error('OpenAI API error:', error);
-      throw new Error('Failed to get response from OpenAI');
+      console.error('Gemini API error:', error);
+      throw new Error('Failed to get response from Gemini');
     }
 
-    const data: ChatResponse = await response.json();
-    const assistantResponse = data.choices[0]?.message?.content || "I'm sorry, I couldn't process that request.";
+    const data = await response.json();
+    const assistantResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || "I'm sorry, I couldn't process that request.";
 
     // Generate new threadId if it doesn't exist
     const newThreadId = threadId || crypto.randomUUID();
