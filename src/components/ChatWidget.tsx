@@ -27,6 +27,18 @@ export function ChatWidget() {
     return urls;
   };
 
+  const getWorkflowName = (url: string) => {
+    // Remove any trailing punctuation and get the last part of the URL
+    const cleanUrl = url.replace(/[.,]$/, '');
+    const parts = cleanUrl.split('/');
+    const lastPart = parts[parts.length - 1];
+    // Replace hyphens with spaces and capitalize each word
+    return lastPart
+      .split('-')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
@@ -116,7 +128,7 @@ export function ChatWidget() {
                         >
                           <div className="flex items-center justify-between">
                             <span className="text-sm font-medium text-gray-800 truncate flex-1">
-                              {url}
+                              {getWorkflowName(url)}
                             </span>
                             <ExternalLink className="h-4 w-4 ml-2 text-gray-500" />
                           </div>
