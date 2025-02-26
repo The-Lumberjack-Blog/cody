@@ -83,6 +83,7 @@ export type Database = {
           apikey: boolean
           created_at: string
           email: string
+          gemini_api_key: string | null
           id: string
           ip_address: string
           paid: boolean
@@ -91,6 +92,7 @@ export type Database = {
           apikey?: boolean
           created_at?: string
           email: string
+          gemini_api_key?: string | null
           id?: string
           ip_address: string
           paid?: boolean
@@ -99,6 +101,7 @@ export type Database = {
           apikey?: boolean
           created_at?: string
           email?: string
+          gemini_api_key?: string | null
           id?: string
           ip_address?: string
           paid?: boolean

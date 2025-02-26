@@ -41,12 +41,10 @@ export function CodyModal({ open, onOpenChange, onApiKeySubmit }: CodyModalProps
       const response = await fetch("https://api.ipify.org?format=json");
       const { ip } = await response.json();
 
-      const { error } = await supabase.from("cody").insert([
-        {
-          email,
-          ip_address: ip,
-        },
-      ]);
+      const { error } = await supabase.from("cody").insert({
+        email,
+        ip_address: ip,
+      });
 
       if (error) throw error;
 
@@ -83,13 +81,11 @@ export function CodyModal({ open, onOpenChange, onApiKeySubmit }: CodyModalProps
       const response = await fetch("https://api.ipify.org?format=json");
       const { ip } = await response.json();
 
-      const { error } = await supabase.from("cody").insert([
-        {
-          ip_address: ip,
-          apikey: true,
-          gemini_api_key: apiKey,
-        },
-      ]);
+      const { error } = await supabase.from("cody").insert({
+        ip_address: ip,
+        apikey: true,
+        gemini_api_key: apiKey,
+      });
 
       if (error) throw error;
 
