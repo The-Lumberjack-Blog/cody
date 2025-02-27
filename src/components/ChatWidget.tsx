@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,7 +7,6 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from "react-markdown";
 import { Card } from "@/components/ui/card";
-import { CodyModal } from "./CodyModal";
 
 interface ChatMessage {
   text: string;
@@ -19,13 +19,10 @@ export function ChatWidget() {
   const [threadId, setThreadId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [consultingMode, setConsultingMode] = useState(false);
-  const [showModal, setShowModal] = useState(false);
-  const [userApiKey, setUserApiKey] = useState<string | null>(null);
   const [workflowCount, setWorkflowCount] = useState<number>(0);
   const { toast } = useToast();
 
   useEffect(() => {
-    checkSessionAndApiKey();
     fetchWorkflowCount();
   }, []);
 
@@ -41,49 +38,6 @@ export function ChatWidget() {
     } catch (error) {
       console.error('Error fetching workflow count:', error);
     }
-  };
-
-  const checkSessionAndApiKey = async () => {
-    try {
-      const response = await fetch("https://api.ipify.org?format=json");
-      const { ip } = await response.json();
-
-      const { data: existingUser } = await supabase
-        .from("cody")
-        .select("*")
-        .eq("ip_address", ip)
-        .single();
-
-      if (!existingUser) {
-        const { error } = await supabase
-          .from("cody")
-          .insert([{ ip_address: ip, email: `user_${Date.now()}@placeholder.com` }]);
-
-        if (error) throw error;
-        
-        return;
-      }
-
-      const firstSessionTime = new Date(existingUser.created_at).getTime();
-      const currentTime = new Date().getTime();
-      const threeMinutesInMs = 3 * 60 * 1000;
-      const hasThreeMinutesPassed = (currentTime - firstSessionTime) >= threeMinutesInMs;
-
-      if (hasThreeMinutesPassed) {
-        if (existingUser.gemini_api_key) {
-          setUserApiKey(existingUser.gemini_api_key);
-        } else {
-          setShowModal(true);
-        }
-      }
-    } catch (error) {
-      console.error("Error checking session and API key:", error);
-    }
-  };
-
-  const handleApiKeySubmit = async () => {
-    await checkSessionAndApiKey();
-    setShowModal(false);
   };
 
   const extractUrls = (text: string) => {
@@ -137,8 +91,7 @@ export function ChatWidget() {
         body: {
           userInput: textToSubmit,
           threadId,
-          consultingMode,
-          apiKey: userApiKey
+          consultingMode
         }
       });
 
@@ -297,12 +250,6 @@ export function ChatWidget() {
           Cody knows {workflowCount} n8n workflows, all from n8n template marketplace.
         </div>
       </div>
-
-      <CodyModal
-        open={showModal}
-        onOpenChange={setShowModal}
-        onApiKeySubmit={handleApiKeySubmit}
-      />
     </div>
   );
 }
